@@ -1,0 +1,14 @@
+import { Box } from 'lucide-react'
+import type { SearchMeta } from '@/lib/dashboard-search/types'
+
+export const searchMeta: SearchMeta = {
+  id: 'dash.playgrounds',
+  titleKey: 'common.playgrounds',
+  descriptionKey: 'dashboard.search.entries.playgrounds.description',
+  keywordsKey: 'dashboard.search.entries.playgrounds.keywords',
+  icon: Box,
+  href: '/dash/playgrounds',
+  group: 'navigation',
+  featureKey: 'playgrounds',
+  featureDefaultDisabled: true,
+}

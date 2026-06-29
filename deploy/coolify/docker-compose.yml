@@ -1,0 +1,41 @@
+# LearnHouse Coolify Deployment
+# Import this in Coolify as a Docker Compose resource.
+
+version: "3.9"
+
+services:
+  api:
+    image: ghcr.io/learnhouse/learnhouse-api:latest
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-9000}:${APP_PORT:-9000}"
+    environment:
+      LEARNHOUSE_SQL_CONNECTION_STRING: "${LEARNHOUSE_SQL_CONNECTION_TYPE:-postgresql}+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT:-5432}/${POSTGRES_DB}"
+      LEARNHOUSE_REDIS_CONNECTION_STRING: "redis://${REDIS_HOST}:${REDIS_PORT:-6379}/${REDIS_DB:-0}"
+      LEARNHOUSE_AUTH_JWT_SECRET_KEY: "${LEARNHOUSE_AUTH_JWT_SECRET_KEY}"
+      LEARNHOUSE_SITE_NAME: "${LEARNHOUSE_SITE_NAME:-LearnHouse}"
+      LEARNHOUSE_DOMAIN: "${LEARNHOUSE_DOMAIN}"
+      LEARNHOUSE_FRONTEND_DOMAIN: "${LEARNHOUSE_FRONTEND_DOMAIN}"
+      LEARNHOUSE_PORT: "${APP_PORT:-9000}"
+      LEARNHOUSE_SSL: "${LEARNHOUSE_SSL:-false}"
+      LEARNHOUSE_ALLOWED_ORIGINS: "${LEARNHOUSE_ALLOWED_ORIGINS}"
+      LEARNHOUSE_EMAIL_PROVIDER: "${LEARNHOUSE_EMAIL_PROVIDER:-resend}"
+      LEARNHOUSE_SYSTEM_EMAIL_ADDRESS: "${LEARNHOUSE_SYSTEM_EMAIL_ADDRESS}"
+      LEARNHOUSE_RESEND_API_KEY: "${LEARNHOUSE_RESEND_API_KEY}"
+      LEARNHOUSE_CONTENT_DELIVERY_TYPE: "${LEARNHOUSE_CONTENT_DELIVERY_TYPE:-filesystem}"
+      LEARNHOUSE_S3_API_BUCKET_NAME: "${LEARNHOUSE_S3_API_BUCKET_NAME:-}"
+      LEARNHOUSE_S3_API_ENDPOINT_URL: "${LEARNHOUSE_S3_API_ENDPOINT_URL:-}"
+      LEARNHOUSE_LOG_LEVEL: "${LEARNHOUSE_LOG_LEVEL:-INFO}"
+      LEARNHOUSE_DEVELOPMENT_MODE: "false"
+    volumes:
+      - "${CONTENT_PATH:-./content}:/app/content"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${APP_PORT:-9000}/api/v1/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: "${API_MEMORY_LIMIT:-512M}"
