@@ -20,7 +20,7 @@ async def answer_question(req: QARequest, model_name: str, language: str = "en")
         course_context=req.course_context,
     )
 
-    result = await generate(
+    gen_result = await generate(
         model_name=model_name,
         user_prompt=user_prompt,
         system_prompt=system_prompt,
@@ -28,4 +28,4 @@ async def answer_question(req: QARequest, model_name: str, language: str = "en")
         temperature=0.3,
         max_tokens=1024,
     )
-    return result
+    return gen_result.output

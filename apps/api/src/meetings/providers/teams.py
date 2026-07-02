@@ -1,17 +1,7 @@
 """
-Microsoft Teams provider — architecture / stub.
+Microsoft Teams provider — requires Azure AD app with OnlineMeetings.ReadWrite.All.
 
-Requires a Microsoft Entra ID (Azure AD) app with the
-OnlineMeetings.ReadWrite.All permission and an OAuth2 client
-credentials flow.
-
-Steps to complete:
-  1. Register an app in Azure AD → Certificates & secrets.
-  2. Add API permission: OnlineMeetings.ReadWrite.All (Application).
-  3. Grant admin consent.
-  4. Use Microsoft Graph API:
-     POST /v1.0/users/{user_id}/onlineMeetings
-  5. Response includes joinUrl, conferenceId, and meetingId.
+Credentials: tenant_id, client_id, client_secret, user_id (set via env / config).
 """
 
 from typing import Optional
@@ -33,29 +23,123 @@ class TeamsMeetingProvider(MeetingProvider):
         self.client_id = config.get("client_id", "")
         self.client_secret = config.get("client_secret", "")
         self.user_id = config.get("user_id", "")
+        if not all([self.tenant_id, self.client_id, self.client_secret]):
+            raise MeetingProviderError(
+                "Teams requires tenant_id, client_id, and client_secret. "
+                "Set LEARNHOUSE_TEAMS_TENANT_ID, LEARNHOUSE_TEAMS_CLIENT_ID, "
+                "LEARNHOUSE_TEAMS_CLIENT_SECRET in environment.",
+                provider="teams",
+                code="missing_credentials",
+            )
 
     async def _get_access_token(self) -> str:
-        raise NotImplementedError(
-            "Microsoft Teams requires an Azure AD app registration.\n"
-            "1. Register an app in https://portal.azure.com.\n"
-            "2. Add OnlineMeetings.ReadWrite.All permission.\n"
-            "3. Set LEARNHOUSE_TEAMS_TENANT_ID, LEARNHOUSE_TEAMS_CLIENT_ID,\n"
-            "   LEARNHOUSE_TEAMS_CLIENT_SECRET in environment.\n"
-            "4. Implement OAuth2 client credentials grant."
-        )
+        import httpx
+        url = f"https://login.microsoftonline.com/{self.tenant_id}/oauth2/v2.0/token"
+        data = {
+            "grant_type": "client_credentials",
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "scope": "https://graph.microsoft.com/.default",
+        }
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(url, data=data)
+            resp.raise_for_status()
+            return resp.json()["access_token"]
 
     async def create_meeting(self, config: MeetingConfig) -> Meeting:
-        raise NotImplementedError(
-            "Teams meeting creation requires Azure AD credentials."
-        )
+        token = await self._get_access_token()
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        }
+        payload = {
+            "subject": config.title,
+            "startDateTime": config.start_time,
+            "endDateTime": config.end_time,
+            "participants": {
+                "organizer": {
+                    "identity": {
+                        "user": {
+                            "id": self.user_id,
+                        }
+                    }
+                }
+            },
+        }
+        if config.duration_minutes and config.start_time:
+            from datetime import datetime, timedelta
+            try:
+                start = datetime.fromisoformat(config.start_time)
+                payload["endDateTime"] = (start + timedelta(minutes=config.duration_minutes)).isoformat()
+            except (ValueError, TypeError):
+                pass
+
+        import httpx
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                f"https://graph.microsoft.com/v1.0/users/{self.user_id}/onlineMeetings",
+                json=payload,
+                headers=headers,
+            )
+            if resp.status_code in (401, 403):
+                raise MeetingProviderError(
+                    "Teams API authentication failed. Check credentials.",
+                    provider="teams", code="auth_failed",
+                )
+            resp.raise_for_status()
+            data = resp.json()
+            return Meeting(
+                provider_meeting_id=data.get("id", ""),
+                join_url=data.get("joinUrl", ""),
+            )
 
     async def update_meeting(
         self, provider_meeting_id: str, config: MeetingConfig
     ) -> Meeting:
-        raise NotImplementedError("Teams provider not fully implemented")
+        token = await self._get_access_token()
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        }
+        payload = {"subject": config.title}
+        import httpx
+        async with httpx.AsyncClient() as client:
+            resp = await client.patch(
+                f"https://graph.microsoft.com/v1.0/users/{self.user_id}/onlineMeetings/{provider_meeting_id}",
+                json=payload,
+                headers=headers,
+            )
+            resp.raise_for_status()
+            return Meeting(
+                provider_meeting_id=provider_meeting_id,
+                join_url="",
+            )
 
     async def delete_meeting(self, provider_meeting_id: str) -> None:
-        raise NotImplementedError("Teams provider not fully implemented")
+        token = await self._get_access_token()
+        headers = {"Authorization": f"Bearer {token}"}
+        import httpx
+        async with httpx.AsyncClient() as client:
+            resp = await client.delete(
+                f"https://graph.microsoft.com/v1.0/users/{self.user_id}/onlineMeetings/{provider_meeting_id}",
+                headers=headers,
+            )
+            resp.raise_for_status()
 
     async def get_meeting(self, provider_meeting_id: str) -> Optional[Meeting]:
-        raise NotImplementedError("Teams provider not fully implemented")
+        token = await self._get_access_token()
+        headers = {"Authorization": f"Bearer {token}"}
+        import httpx
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                f"https://graph.microsoft.com/v1.0/users/{self.user_id}/onlineMeetings/{provider_meeting_id}",
+                headers=headers,
+            )
+            if resp.status_code == 404:
+                return None
+            resp.raise_for_status()
+            data = resp.json()
+            return Meeting(
+                provider_meeting_id=data.get("id", ""),
+                join_url=data.get("joinUrl", ""),
+            )

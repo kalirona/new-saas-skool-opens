@@ -859,6 +859,23 @@ async def reserve_ai_credit(
             detail="AI is not enabled for this organization",
         )
 
+    # Check DB quota limits (AI-5)
+    try:
+        from src.services.ai.studio.usage_tracking_service import AIUsageTrackingService
+        within_quota, quota_info = await AIUsageTrackingService.check_quota(
+            org_id, db_session, estimated_tokens=0
+        )
+        if not within_quota:
+            violations = quota_info.get("violations", ["Quota limit exceeded"])
+            raise HTTPException(
+                status_code=429,
+                detail="; ".join(violations),
+            )
+    except HTTPException:
+        raise
+    except Exception:
+        logger.warning("Failed to check AI quota for org %d", org_id, exc_info=True)
+
     # Non-SaaS deployments do not enforce limits but still track usage.
     if _is_non_saas():
         r = _get_redis_client()
@@ -878,7 +895,25 @@ async def reserve_ai_credit(
     if config.get("config_version", "1.0").startswith("2"):
         extra = config.get("overrides", {}).get("ai", {}).get("extra_limit", 0) or 0
 
-    r = _get_redis_client()
+    # Enforce concurrent request limit (AI-7)
+    try:
+        r = _get_redis_client()
+        concurrent_key = f"ai_concurrent:{org_id}"
+        concurrent_count = int(r.incr(concurrent_key))
+        if concurrent_count == 1:
+            r.expire(concurrent_key, 60)
+        concurrent_limit = max(5, (base_credits // 100) if base_credits > 0 else 20)
+        if concurrent_count > concurrent_limit:
+            r.decr(concurrent_key)
+            raise HTTPException(
+                status_code=429,
+                detail=f"Too many concurrent AI requests. Limit: {concurrent_limit}.",
+            )
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise
+        logger.warning("Failed to check concurrent AI limit: %s", e)
+
     unlimited = "1" if base_credits == -1 else "0"
 
     try:
@@ -923,6 +958,15 @@ return new_val
 """
 
 
+def release_ai_concurrent(org_id: int) -> None:
+    """Decrement the concurrent request counter for the org."""
+    try:
+        r = _get_redis_client()
+        r.decr(f"ai_concurrent:{org_id}")
+    except Exception:
+        pass
+
+
 def refund_ai_credit(org_id: int, amount: int = 1) -> int:
     """
     Refund ``amount`` previously-reserved AI credits. Callers that use
@@ -931,6 +975,7 @@ def refund_ai_credit(org_id: int, amount: int = 1) -> int:
     quota. The decrement is clamped at zero so accidental double-refunds do
     not mint free credits.
     """
+    release_ai_concurrent(org_id)
     if amount <= 0:
         return 0
     r = _get_redis_client()

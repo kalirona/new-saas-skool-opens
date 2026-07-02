@@ -122,12 +122,15 @@ async def api_billing_dashboard(
             elif p and p.interval == "yearly":
                 mrr += p.price / 12
 
-    # Churn: cancelled / (active + cancelled) over last 30 days
+    # Churn: cancelled in last 30 days / total members
+    from datetime import timedelta
+    thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
     cancelled_30d = (
         await db_session.execute(
             select(func.count(CommunityMember.id)).where(
                 CommunityMember.org_id == org_id,
                 CommunityMember.status == "cancelled",
+                CommunityMember.update_date >= thirty_days_ago,
             )
         )
     ).scalar() or 0
@@ -315,6 +318,38 @@ async def api_change_subscription_plan(
         )
     ).scalars().first()
 
+    # Propagate plan change to billing provider for proration
+    if member.billing_provider and member.billing_provider_subscription_id and new_plan.billing_provider_plan_id:
+        try:
+            if member.billing_provider == "stripe":
+                from src.billing.providers.stripe import StripeBillingProvider
+                from config.config import get_learnhouse_config
+                cfg = get_learnhouse_config()
+                provider = StripeBillingProvider({
+                    "api_key": cfg.payments_config.stripe.stripe_secret_key or "",
+                    "webhook_secret": cfg.payments_config.stripe.stripe_webhook_standard_secret or "",
+                })
+                await provider.update_subscription_plan(
+                    member.billing_provider_subscription_id,
+                    new_plan.billing_provider_plan_id,
+                )
+            elif member.billing_provider == "paypal":
+                from src.billing.providers.paypal import PayPalBillingProvider
+                cfg = get_learnhouse_config()
+                provider = PayPalBillingProvider({
+                    "client_id": cfg.payments_config.paypal.paypal_client_id or "",
+                    "client_secret": cfg.payments_config.paypal.paypal_client_secret or "",
+                    "webhook_id": cfg.payments_config.paypal.paypal_webhook_id or "",
+                    "sandbox": cfg.payments_config.paypal.paypal_sandbox,
+                })
+                await provider.update_subscription_plan(
+                    member.billing_provider_subscription_id,
+                    new_plan.billing_provider_plan_id,
+                )
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error("Failed to update subscription plan with provider: %s", e)
+
     member.plan_id = new_plan.id
     member.update_date = _now()
     db_session.add(member)
@@ -347,24 +382,24 @@ async def api_change_subscription_plan(
 # ── Cancel Subscription ──────────────────────────────────────────────────
 
 
+class CancelSubscriptionRequest(BaseModel):
+    subscription_id: int
+
+
 @router.post(
     "/payments/subscription/cancel",
     summary="Cancel active subscription",
 )
 async def api_cancel_subscription(
     request: Request,
-    body: dict,
+    body: CancelSubscriptionRequest,
     current_user: PublicUser = Depends(get_current_user),
     db_session: AsyncSession = Depends(get_db_session),
 ):
-    subscription_id = body.get("subscription_id")
-    if not subscription_id:
-        raise HTTPException(status_code=400, detail="subscription_id required")
-
     member = (
         await db_session.execute(
             select(CommunityMember).where(
-                CommunityMember.id == subscription_id,
+                CommunityMember.id == body.subscription_id,
                 CommunityMember.user_id == current_user.id,
             )
         )
@@ -374,6 +409,32 @@ async def api_cancel_subscription(
 
     if member.status not in ("active", "trial", "past_due"):
         raise HTTPException(status_code=400, detail="Subscription is not active")
+
+    # Propagate cancellation to the billing provider
+    if member.billing_provider and member.billing_provider_subscription_id:
+        try:
+            if member.billing_provider == "stripe":
+                from src.billing.providers.stripe import StripeBillingProvider
+                from config.config import get_learnhouse_config
+                cfg = get_learnhouse_config()
+                provider = StripeBillingProvider({
+                    "api_key": cfg.payments_config.stripe.stripe_secret_key or "",
+                    "webhook_secret": cfg.payments_config.stripe.stripe_webhook_standard_secret or "",
+                })
+                await provider.cancel_subscription(member.billing_provider_subscription_id, at_period_end=True)
+            elif member.billing_provider == "paypal":
+                from src.billing.providers.paypal import PayPalBillingProvider
+                cfg = get_learnhouse_config()
+                provider = PayPalBillingProvider({
+                    "client_id": cfg.payments_config.paypal.paypal_client_id or "",
+                    "client_secret": cfg.payments_config.paypal.paypal_client_secret or "",
+                    "webhook_id": cfg.payments_config.paypal.paypal_webhook_id or "",
+                    "sandbox": cfg.payments_config.paypal.paypal_sandbox,
+                })
+                await provider.cancel_subscription(member.billing_provider_subscription_id, at_period_end=True)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error("Failed to cancel subscription with provider: %s", e)
 
     member.status = "cancelled"
     member.cancelled_at = _now()

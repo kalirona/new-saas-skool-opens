@@ -1,8 +1,11 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
 from src.core.events.database import get_db_session
-from src.db.media.media import MediaCreate, MediaRead, MediaTypeEnum, MediaUpdate
-from src.security.auth import get_current_user
+from src.db.media.media import Media, MediaCreate, MediaRead, MediaTypeEnum, MediaUpdate
+from src.security.auth import get_current_user, resolve_acting_user_id
+from src.security.org_auth import require_org_membership
 from src.services.users.users import PublicUser
 from src.services.media.media import (
     create_media,
@@ -35,6 +38,7 @@ async def api_create_media(
     current_user: PublicUser = Depends(get_current_user),
     db_session=Depends(get_db_session),
 ) -> MediaRead:
+    await require_org_membership(resolve_acting_user_id(current_user), org_id, db_session)
     media_object = MediaCreate(
         org_id=org_id,
         name=name,
@@ -59,6 +63,13 @@ async def api_get_media(
     current_user: PublicUser = Depends(get_current_user),
     db_session=Depends(get_db_session),
 ) -> MediaRead:
+    media = (await db_session.execute(
+        select(Media).where(Media.media_uuid == media_uuid)
+    )).scalars().first()
+    if not media:
+        from fastapi import HTTPException as _HTTPException
+        raise _HTTPException(status_code=404, detail="Media not found")
+    await require_org_membership(resolve_acting_user_id(current_user), media.org_id, db_session)
     return await get_media(request, media_uuid, current_user, db_session)
 
 
@@ -76,6 +87,7 @@ async def api_get_media_list(
     current_user: PublicUser = Depends(get_current_user),
     db_session=Depends(get_db_session),
 ) -> List[MediaRead]:
+    await require_org_membership(resolve_acting_user_id(current_user), int(org_id), db_session)
     return await get_media_list(request, org_id, current_user, db_session, page, limit)
 
 
@@ -92,6 +104,13 @@ async def api_update_media(
     current_user: PublicUser = Depends(get_current_user),
     db_session=Depends(get_db_session),
 ) -> MediaRead:
+    media = (await db_session.execute(
+        select(Media).where(Media.media_uuid == media_uuid)
+    )).scalars().first()
+    if not media:
+        from fastapi import HTTPException as _HTTPException
+        raise _HTTPException(status_code=404, detail="Media not found")
+    await require_org_membership(resolve_acting_user_id(current_user), media.org_id, db_session)
     return await update_media(request, media_object, media_uuid, current_user, db_session)
 
 
@@ -106,4 +125,11 @@ async def api_delete_media(
     current_user: PublicUser = Depends(get_current_user),
     db_session=Depends(get_db_session),
 ):
+    media = (await db_session.execute(
+        select(Media).where(Media.media_uuid == media_uuid)
+    )).scalars().first()
+    if not media:
+        from fastapi import HTTPException as _HTTPException
+        raise _HTTPException(status_code=404, detail="Media not found")
+    await require_org_membership(resolve_acting_user_id(current_user), media.org_id, db_session)
     return await delete_media(request, media_uuid, current_user, db_session)

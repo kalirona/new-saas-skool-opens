@@ -80,10 +80,36 @@ cp deploy/docker-compose.yml "$APP_DIR/docker-compose.yml"
 cp deploy/nginx.conf "$APP_DIR/nginx.conf"
 chown "$APP_USER":"$APP_USER" "$APP_DIR/docker-compose.yml" "$APP_DIR/nginx.conf"
 
+# ── Set up backup cron job ──────────────────────────────────────────────
+log "Setting up daily backup cron job..."
+cat > /etc/cron.d/learnhouse-backup <<EOF
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Daily database backup at 3:00 AM
+0 3 * * * ${APP_USER} LEARNHOUSE_SQL_CONNECTION_STRING="${LEARNHOUSE_SQL_CONNECTION_STRING}" BACKUP_DIR="${APP_DIR}/backups" bash ${APP_DIR}/deploy/scripts/backup-db.sh >> ${APP_DIR}/logs/backup.log 2>&1
+
+# Daily storage backup at 4:00 AM
+0 4 * * * ${APP_USER} BACKUP_DIR="${APP_DIR}/backups" bash ${APP_DIR}/deploy/scripts/backup-storage.sh >> ${APP_DIR}/logs/backup.log 2>&1
+
+# Weekly backup verification every Sunday at 5:00 AM
+0 5 * * 0 ${APP_USER} BACKUP_DIR="${APP_DIR}/backups" bash ${APP_DIR}/deploy/scripts/verify-backup.sh >> ${APP_DIR}/logs/backup.log 2>&1
+EOF
+chmod 644 /etc/cron.d/learnhouse-backup
+
+# ── Deploy backup scripts ──────────────────────────────────────────────
+log "Deploying backup scripts..."
+cp -r deploy/scripts "$APP_DIR/deploy/"
+chmod +x "$APP_DIR"/deploy/scripts/*.sh
+chown -R "$APP_USER":"$APP_USER" "$APP_DIR/deploy/scripts"
+
 # ── Start services ──────────────────────────────────────────────────────
 log "Starting services with Docker Compose..."
 cd "$APP_DIR"
 docker compose --env-file .env -f docker-compose.yml up -d
+
+# ── Tag the initial image as :prev for rollback support ─────────────────
+docker tag learnhouse/api:latest learnhouse/api:prev 2>/dev/null || true
 
 # ── Set up systemd for automatic restarts ───────────────────────────────
 cat > /etc/systemd/system/learnhouse.service <<EOF
@@ -98,6 +124,8 @@ RemainAfterExit=yes
 WorkingDirectory=${APP_DIR}
 ExecStart=/usr/bin/docker compose --env-file .env -f docker-compose.yml up -d
 ExecStop=/usr/bin/docker compose --env-file .env -f docker-compose.yml down
+ExecReload=/usr/bin/docker compose --env-file .env -f docker-compose.yml pull
+ExecReload=/usr/bin/docker compose --env-file .env -f docker-compose.yml up -d --no-deps api
 StandardOutput=journal
 User=${APP_USER}
 
@@ -139,10 +167,13 @@ log "  API:          http://localhost:9000"
 log "  App Dir:      ${APP_DIR}"
 log "  Docker:       cd ${APP_DIR} && docker compose ps"
 log "  Logs:         ${APP_DIR}/logs/"
-log "  Backups:      ${APP_DIR}/backups/"
+log "  Backups:      ${APP_DIR}/backups/ (daily at 3AM DB, 4AM storage)"
+log "  Rollback:     sudo bash deploy/rollback.sh"
 log ""
-log "  ** IMPORTANT **"
-log "  1. Set LEARNHOUSE_AUTH_JWT_SECRET_KEY and LEARNHOUSE_RESEND_API_KEY in .env"
+log "  ** POST-PROVISION STEPS **"
+log "  1. Edit ${APP_DIR}/.env — fill in secrets, API keys, OTel endpoints"
 log "  2. Configure DNS A record pointing ${DOMAIN} to this server's IP"
-log "  3. Run: docker compose --env-file .env logs -f"
+log "  3. Verify monitoring: curl http://localhost:9000/api/v1/health"
+log "  4. Test backup:      sudo bash ${APP_DIR}/deploy/scripts/verify-backup.sh"
+log "  5. Run:              docker compose --env-file .env logs -f"
 log "========================================"

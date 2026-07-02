@@ -1,17 +1,17 @@
 # ───────────────────────────────────────────────
 # Stage 1: Frontend dependency install
 # ───────────────────────────────────────────────
-FROM oven/bun:1-alpine AS frontend-deps
+FROM node:24-alpine AS frontend-deps
 RUN apk update && apk add --no-cache libc6-compat && rm -rf /var/cache/apk/*
 WORKDIR /app
 
-COPY apps/web/package.json apps/web/bun.lock* ./
-RUN bun install --frozen-lockfile
+COPY apps/web/package.json apps/web/pnpm-lock.yaml apps/web/pnpm-workspace.yaml ./
+RUN corepack enable && pnpm install --frozen-lockfile
 
 # ───────────────────────────────────────────────
 # Stage 2: Frontend build
 # ───────────────────────────────────────────────
-FROM oven/bun:1-alpine AS frontend-builder
+FROM node:24-alpine AS frontend-builder
 WORKDIR /app
 COPY --from=frontend-deps /app/node_modules ./node_modules
 COPY apps/web .
@@ -22,7 +22,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Remove .env files to avoid leaking secrets into the build
 RUN rm -f .env*
 
-RUN bun run build
+RUN corepack enable && pnpm run build
 
 # ───────────────────────────────────────────────
 # Stage 3: Frontend production image

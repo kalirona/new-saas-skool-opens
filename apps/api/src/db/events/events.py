@@ -129,3 +129,4 @@ class EventDetailRead(EventRead):
     author_avatar: Optional[str] = None
     attendee_count: int = 0
     rsvp_status: Optional[str] = None
+    is_restricted: bool = False

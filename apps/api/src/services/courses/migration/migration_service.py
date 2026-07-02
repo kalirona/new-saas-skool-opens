@@ -312,13 +312,13 @@ async def suggest_structure(
     try:
         from src.services.ai.llm import generate, model_for_tier
 
-        raw = await generate(
+        gen_raw = await generate(
             model_name=model_for_tier("fast"),
             user_prompt=prompt,
             temperature=0.3,
             max_tokens=4096,
         )
-        raw = raw.strip()
+        raw = gen_raw.output.strip()
         # Strip markdown code fences if present
         if raw.startswith("```"):
             raw = raw.split("\n", 1)[1]

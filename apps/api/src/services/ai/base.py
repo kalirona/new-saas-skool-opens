@@ -2,15 +2,13 @@ from typing import Optional, Dict, Any, AsyncGenerator
 from uuid import uuid4
 from datetime import datetime, timezone
 import logging
-import redis
 import json
 
-from config.config import get_learnhouse_config
+from src.core.redis import get_redis_client
 from src.services.ai.llm import generate, generate_stream, model_for_tier
+from src.services.ai.prompt_sanitizer import sanitize_user_input
 
 logger = logging.getLogger(__name__)
-
-LH_CONFIG = get_learnhouse_config()
 
 
 def _build_context_prompt(message_for_the_prompt: str, text_reference: str) -> str:
@@ -31,13 +29,13 @@ async def ask_ai(
     Process an AI query through the provider-agnostic LLM layer with course content as context.
     """
     try:
-        output = await generate(
+        result = await generate(
             model_name=model_name or model_for_tier("standard"),
-            user_prompt=question,
+            user_prompt=sanitize_user_input(question),
             system_prompt=_build_context_prompt(message_for_the_prompt, text_reference),
             history=message_history,
         )
-        return {"output": output, "intermediate_steps": []}
+        return {"output": result.output, "intermediate_steps": []}
     except Exception as e:
         raise Exception(f"Error processing AI request: {str(e)}")
 
@@ -45,15 +43,11 @@ def get_chat_session_history(aichat_uuid: Optional[str] = None) -> Dict[str, Any
     """Get or create a new chat session history using Redis"""
     session_id = aichat_uuid if aichat_uuid else f"aichat_{uuid4()}"
     
-    LH_CONFIG = get_learnhouse_config()
-    redis_conn_string = LH_CONFIG.redis_config.redis_connection_string
-
     message_history = []
     
-    if redis_conn_string:
+    r = get_redis_client()
+    if r:
         try:
-            # Connect to Redis and get message history
-            r = redis.from_url(redis_conn_string, socket_connect_timeout=5, socket_timeout=5)
             history_data = r.get(f"chat_history:{session_id}")
             if history_data:
                 if isinstance(history_data, bytes):
@@ -76,14 +70,9 @@ def get_chat_session_history(aichat_uuid: Optional[str] = None) -> Dict[str, Any
 
 def save_message_to_history(aichat_uuid: str, user_message: str, ai_response: str, user_id: Optional[int] = None, course_uuid: Optional[str] = None, sources: Optional[list] = None, mode: str = "course_only", org_id: Optional[int] = None):
     """Save a message exchange to Redis history. Auto-creates session metadata on first message."""
-    LH_CONFIG = get_learnhouse_config()
-    redis_conn_string = LH_CONFIG.redis_config.redis_connection_string
-
-    if not redis_conn_string:
+    r = get_redis_client()
+    if not r:
         return
-
-    try:
-        r = redis.from_url(redis_conn_string, socket_connect_timeout=5, socket_timeout=5)
 
         # Get existing history
         history_key = f"chat_history:{aichat_uuid}"
@@ -130,12 +119,8 @@ CHAT_TTL = 2160000  # 25 days in seconds
 
 
 def _get_redis():
-    """Get a Redis connection."""
-    LH_CONFIG = get_learnhouse_config()
-    conn = LH_CONFIG.redis_config.redis_connection_string
-    if not conn:
-        return None
-    return redis.from_url(conn, socket_connect_timeout=5, socket_timeout=5)
+    """Get a Redis client from the shared connection pool."""
+    return get_redis_client()
 
 
 def save_chat_session_meta(aichat_uuid: str, user_id: int, title: str, course_uuid: Optional[str] = None, mode: str = "course_only", org_id: Optional[int] = None):
@@ -311,15 +296,16 @@ async def generate_chat_title(user_message: str, ai_response: str) -> str:
         prompt = (
             "Summarize this conversation into a very short title (max 6 words). "
             "Output ONLY the title, nothing else. No quotes, no punctuation at the end.\n\n"
-            f"User: {user_message[:300]}\n"
+            f"User: {sanitize_user_input(user_message[:300])}\n"
             f"Assistant: {ai_response[:300]}"
         )
-        text = await generate(
+        text_result = await generate(
             model_name=model_for_tier("fast"),
             user_prompt=prompt,
             max_tokens=30,
             temperature=0.3,
         )
+        text = text_result.output
         if text:
             title = text.strip().strip('"\'').strip()
             if title:
@@ -347,7 +333,7 @@ async def ask_ai_stream(
     try:
         async for chunk in generate_stream(
             model_name=model_name or model_for_tier("standard"),
-            user_prompt=question,
+            user_prompt=sanitize_user_input(question),
             system_prompt=_build_context_prompt(message_for_the_prompt, text_reference),
             history=message_history,
         ):
@@ -376,17 +362,18 @@ async def generate_follow_up_suggestions(
         # Short, direct prompt for fast generation - respond in same language as user
         prompt = f"""Given this educational response, suggest 3 brief follow-up questions a student might ask. Output only the questions, one per line. IMPORTANT: Write the questions in the same language as the user's question.
 
-User's question: {user_message[:200]}
+User's question: {sanitize_user_input(user_message[:200])}
 Response: {response_snippet}
 
 Questions:"""
 
-        text = await generate(
+        text_result = await generate(
             model_name=model_for_tier("fast"),
             user_prompt=prompt,
             max_tokens=150,
             temperature=0.7,
         )
+        text = text_result.output
 
         # Parse the response into a list of questions
         if text:

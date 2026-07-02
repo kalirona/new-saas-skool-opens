@@ -41,7 +41,7 @@ async def generate_course_structure(
     system_prompt = build_course_structure_system_prompt(language)
     user_prompt = build_course_structure_user_prompt(topic, language)
 
-    result = await generate(
+    gen_result = await generate(
         model_name=model_name,
         user_prompt=user_prompt,
         system_prompt=system_prompt,
@@ -49,7 +49,7 @@ async def generate_course_structure(
         temperature=0.7,
         max_tokens=4096,
     )
-    return result
+    return gen_result.output
 
 
 async def generate_lesson_content(
@@ -77,7 +77,7 @@ async def generate_lesson_content(
         language=language,
     )
 
-    result = await generate(
+    gen_result = await generate(
         model_name=model_name,
         user_prompt=user_prompt,
         system_prompt=system_prompt,
@@ -85,7 +85,7 @@ async def generate_lesson_content(
         temperature=0.7,
         max_tokens=8192,
     )
-    return result
+    return gen_result.output
 
 
 async def generate_quiz(
@@ -112,7 +112,7 @@ async def generate_quiz(
         language=language,
     )
 
-    result = await generate(
+    gen_result = await generate(
         model_name=model_name,
         user_prompt=user_prompt,
         system_prompt=system_prompt,
@@ -120,4 +120,4 @@ async def generate_quiz(
         temperature=0.7,
         max_tokens=4096,
     )
-    return result
+    return gen_result.output

@@ -481,6 +481,24 @@ async def update_role(
     await db_session.commit()
     await db_session.refresh(role)
 
+    # VERIFICATION 8: Permission-escalation guard — caller cannot grant permissions
+    # they do not hold themselves (replicated from create_role).
+    update_user_id = resolve_acting_user_id(current_user)
+    if not await is_user_superadmin(update_user_id, db_session):
+        caller_role = await get_user_org_role(update_user_id, role.org_id, db_session)
+        if role.rights and isinstance(role.rights, dict) and caller_role and caller_role.rights and isinstance(caller_role.rights, dict):
+            for right_key, right_permissions in role.rights.items():
+                if right_key in caller_role.rights:
+                    caller_right_permissions = caller_role.rights[right_key]
+                    for perm_key, perm_value in right_permissions.items():
+                        if isinstance(perm_value, bool) and perm_value:
+                            if isinstance(caller_right_permissions, dict) and perm_key in caller_right_permissions:
+                                if not caller_right_permissions[perm_key]:
+                                    raise HTTPException(
+                                        status_code=403,
+                                        detail=f"You cannot update role to grant '{perm_key}' permission for '{right_key}' as you don't have this permission yourself",
+                                    )
+
     # Invalidate session cache for all users with this role
     from src.db.user_organizations import UserOrganization
     from src.routers.users import _invalidate_session_cache

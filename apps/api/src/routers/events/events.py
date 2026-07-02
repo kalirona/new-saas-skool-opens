@@ -1,5 +1,5 @@
 from typing import List, Optional, Dict, Any
-from fastapi import APIRouter, Depends, Request, Query
+from fastapi import APIRouter, Depends, Request, Query, UploadFile, File
 from pydantic import BaseModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from src.core.events.database import get_db_session
@@ -257,6 +257,55 @@ async def api_rsvp_event(
 
 
 @router.get(
+    "/events/{event_uuid}/ical",
+    summary="Export event as iCal/ICS file",
+)
+async def api_event_ical(
+    request: Request,
+    event_uuid: str,
+    current_user: PublicUser = Depends(get_current_user),
+    db_session: AsyncSession = Depends(get_db_session),
+):
+    event = await get_event(request, event_uuid, current_user, db_session)
+    ics_lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//LearnHouse//Events//EN",
+        "BEGIN:VEVENT",
+        f"UID:{event_uuid}@learnhouse",
+        f"DTSTART:{event.start_date.replace('-', '').replace(':', '').replace('T', 'T') if 'T' in event.start_date else event.start_date}",
+        f"SUMMARY:{event.title}",
+    ]
+    if event.description:
+        ics_lines.append(f"DESCRIPTION:{event.description[:200]}")
+    if event.end_date:
+        ics_lines.append(f"DTEND:{event.end_date.replace('-', '').replace(':', '').replace('T', 'T') if 'T' in event.end_date else event.end_date}")
+    if event.meeting_url:
+        ics_lines.append(f"URL:{event.meeting_url}")
+    ics_lines.extend(["END:VEVENT", "END:VCALENDAR"])
+    from fastapi.responses import PlainTextResponse
+    return PlainTextResponse(
+        content="\r\n".join(ics_lines),
+        media_type="text/calendar",
+        headers={"Content-Disposition": f'attachment; filename="{event_uuid}.ics"'},
+    )
+
+
+@router.post(
+    "/events/{event_uuid}/self-checkin",
+    summary="Self check-in as attendee",
+)
+async def api_self_checkin(
+    request: Request,
+    event_uuid: str,
+    current_user: PublicUser = Depends(get_current_user),
+    db_session: AsyncSession = Depends(get_db_session),
+) -> RSVPRead:
+    from src.services.events.events import self_checkin_attendance
+    return await self_checkin_attendance(request, event_uuid, current_user, db_session)
+
+
+@router.get(
     "/events/{event_uuid}/rsvps",
     response_model=List[RSVPRead],
     summary="List RSVPs for an event",
@@ -356,6 +405,25 @@ async def api_get_user_reminders(
 
 
 # ── TASK 8 — Recordings ───────────────────────────────────────────────────
+
+
+@router.post(
+    "/events/{event_uuid}/recordings/upload",
+    summary="Upload a recording file to an event",
+)
+async def api_upload_recording(
+    request: Request,
+    event_uuid: str,
+    file: UploadFile = File(...),
+    recording_type: str = Query(default="recording"),
+    title: Optional[str] = Query(default=None),
+    current_user: PublicUser = Depends(get_current_user),
+    db_session: AsyncSession = Depends(get_db_session),
+) -> EventRecordingRead:
+    from src.services.events.events import upload_event_recording_file
+    return await upload_event_recording_file(
+        request, event_uuid, file, recording_type, title, current_user, db_session,
+    )
 
 
 @router.post(

@@ -70,6 +70,11 @@ services:
     environment:
       LEARNHOUSE_SQL_CONNECTION_STRING: ${LEARNHOUSE_SQL_CONNECTION_STRING}
       LEARNHOUSE_REDIS_CONNECTION_STRING: ${LEARNHOUSE_REDIS_CONNECTION_STRING}
+      LEARNHOUSE_LOG_FORMAT: ${LEARNHOUSE_LOG_FORMAT:-json}
+      LEARNHOUSE_OTEL_ENABLED: ${LEARNHOUSE_OTEL_ENABLED:-false}
+      LEARNHOUSE_SLOW_QUERY_THRESHOLD_MS: ${LEARNHOUSE_SLOW_QUERY_THRESHOLD_MS:-500}
+    volumes:
+      - backups:/app/backups
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/api/v1/health/live"]
       <<: *health-check
@@ -111,3 +116,4 @@ volumes:
   redisdata:
   certs:
   certs-data:
+  backups:

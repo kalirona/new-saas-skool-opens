@@ -1,6 +1,6 @@
 'use client'
 
-import { Building2, BarChart3, Key, LogOut, User, Users } from 'lucide-react'
+import { Activity, Building2, BarChart3, Key, LogOut, User, Users } from 'lucide-react'
 import { signOut } from '@components/Contexts/AuthContext'
 import { useLHSession } from '@components/Contexts/LHSessionContext'
 import { getUserAvatarMediaDirectory } from '@services/media/media'
@@ -63,6 +63,11 @@ function AdminTopMenu() {
             href="/admin/developers"
             icon={<Key size={16} />}
             label="Developers"
+          />
+          <NavLink
+            href="/admin/operations"
+            icon={<Activity size={16} />}
+            label="Operations"
           />
         </nav>
 

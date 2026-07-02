@@ -3,7 +3,7 @@
 import logging
 import os
 import threading
-from typing import Optional
+from typing import BinaryIO, Optional
 
 import boto3
 import botocore.config
@@ -64,6 +64,29 @@ class S3Storage(StorageBackend):
             return path
         except ClientError as e:
             logger.error("S3 write failed for %s: %s", path, e)
+            raise
+
+    async def write_stream(
+        self,
+        path: str,
+        stream: BinaryIO,
+        content_type: str,
+        content_length: int,
+        chunk_size: int = 8 * 1024 * 1024,
+    ) -> str:
+        import mimetypes
+        mime = content_type or mimetypes.guess_type(path)[0] or "application/octet-stream"
+        client = self._get_client()
+        try:
+            client.upload_fileobj(
+                stream,
+                self.bucket_name,
+                path,
+                ExtraArgs={"ContentType": mime},
+            )
+            return path
+        except ClientError as e:
+            logger.error("S3 write_stream failed for %s: %s", path, e)
             raise
 
     async def read(self, path: str) -> Optional[StorageObject]:

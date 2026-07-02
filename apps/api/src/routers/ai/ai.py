@@ -93,6 +93,8 @@ async def activity_chat_event_generator(
     ai_friendly_text: str,
     ai_model: str,
     org_id: int | None = None,
+    db_session = None,
+    user_id: int = 0,
 ):
     """Convert async generator to SSE format with follow-up suggestions.
 
@@ -102,10 +104,11 @@ async def activity_chat_event_generator(
     doesn't silently drain the org's quota.
     """
     import asyncio
-    from src.security.features_utils.usage import refund_ai_credit
+    from src.security.features_utils.usage import refund_ai_credit, release_ai_concurrent
 
     full_response = ""
     stream_failed = False
+    feature = "activity_chat"
     try:
         # Send start event immediately so frontend knows we're ready
         yield f"data: {json.dumps({'type': 'start', 'aichat_uuid': aichat_uuid})}\n\n"
@@ -132,17 +135,39 @@ async def activity_chat_event_generator(
             yield f"data: {json.dumps({'type': 'follow_ups', 'follow_up_suggestions': follow_ups})}\n\n"
 
     except asyncio.CancelledError:
-        # Client disconnect / server shutdown. Do NOT force a refund here: if
-        # the model already produced output the credit was legitimately spent.
-        # The finally block still refunds when nothing was produced
-        # (full_response empty), so a disconnect *after* a full response can't
-        # be abused to get free AI. Re-raise so Starlette observes the cancel.
+        stream_failed = True
         raise
     except Exception:
         stream_failed = True
         logger.exception("Error in activity_chat_event_generator")
         yield f"data: {json.dumps({'type': 'error', 'message': 'An internal error occurred while processing the AI chat request.'})}\n\n"
     finally:
+        # Log request to DB (non-blocking best-effort)
+        if org_id is not None and db_session is not None:
+            try:
+                from src.services.ai.studio.usage_tracking_service import AIUsageTrackingService
+                await AIUsageTrackingService.log_request(
+                    org_id=org_id,
+                    user_id=user_id,
+                    feature=feature,
+                    provider="llm",
+                    model_name=ai_model,
+                    prompt_tokens=0,
+                    completion_tokens=len(full_response.split()),
+                    estimated_cost=0.0,
+                    success=not stream_failed and bool(full_response),
+                    error_message=None if not stream_failed else "stream failed",
+                    duration_ms=None,
+                    request_id=aichat_uuid,
+                    db_session=db_session,
+                )
+            except Exception:
+                logger.debug("Failed to log AI request", exc_info=True)
+
+        # Release concurrent slot
+        if org_id is not None:
+            release_ai_concurrent(org_id)
+
         # Refund credit if the model produced nothing useful.
         if org_id is not None and (stream_failed or not full_response):
             try:

@@ -5,8 +5,9 @@ Not to be confused with the abstract BillingPlan/BillingSubscription/BillingCust
 dataclasses in src/billing/base.py — these are SQLModel tables for persistence.
 """
 
+from decimal import Decimal
 from typing import Optional, Dict, Any
-from sqlalchemy import Column, ForeignKey, Integer, String, Text, JSON, Float, DateTime, Index
+from sqlalchemy import Column, ForeignKey, Integer, String, Text, JSON, Float, DateTime, Index, Numeric
 from sqlmodel import Field, SQLModel
 
 
@@ -64,7 +65,7 @@ class Payment(SQLModel, table=True):
     provider: str = Field(sa_column=Column(String(20)))
     provider_payment_id: str = Field(sa_column=Column(String(255), index=True))
     provider_invoice_id: Optional[str] = Field(default=None, sa_column=Column(String(255)))
-    amount: float = Field(sa_column=Column(Float))
+    amount: Decimal = Field(default=Decimal("0.00"), sa_column=Column(Numeric(10, 2)))
     currency: str = "usd"
     status: str = "succeeded"
     billing_period_start: Optional[str] = None
@@ -78,7 +79,7 @@ class Payment(SQLModel, table=True):
 
 class PaymentRead(SQLModel):
     id: int
-    amount: float
+    amount: Decimal
     currency: str
     status: str
     provider: str

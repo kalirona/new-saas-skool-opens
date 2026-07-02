@@ -1,5 +1,7 @@
 """Prompt templates for the AI assistant capabilities."""
 
+from src.services.ai.prompt_sanitizer import sanitize_user_input
+
 
 def build_qa_system_prompt(language: str = "en") -> str:
     return f"""You are a helpful course assistant. Answer member questions based on the provided context.
@@ -13,7 +15,7 @@ def build_qa_user_prompt(
     discussion_context: str | None = None,
     course_context: str | None = None,
 ) -> str:
-    parts = [f"Question: {question}"]
+    parts = [f"Question: {sanitize_user_input(question)}"]
     if discussion_context:
         parts.append(f"\nDiscussion context:\n{discussion_context}")
     if course_context:
@@ -57,7 +59,7 @@ def build_generate_user_prompt(
     max_length: int = 300,
 ) -> str:
     parts = [
-        f"Write a {tone} {content_type} about: {topic}",
+        f"Write a {tone} {content_type} about: {sanitize_user_input(topic)}",
         f"Maximum {max_length} words.",
     ]
     if context:
@@ -73,4 +75,4 @@ For each category, provide a score (0-1) and brief explanation."""
 
 
 def build_moderate_user_prompt(content: str, categories: list[str]) -> str:
-    return f"Review this content for the following categories: {', '.join(categories)}\n\nContent:\n{content}"
+    return f"Review this content for the following categories: {', '.join(categories)}\n\nContent:\n{sanitize_user_input(content)}"

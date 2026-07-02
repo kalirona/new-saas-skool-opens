@@ -194,10 +194,10 @@ class PayPalBillingProvider(BillingProvider):
 
     async def get_customer(self, provider_customer_id: str) -> Optional[BillingCustomer]:
         try:
-            result = await self._request("GET", f"/v2/customer/partner-referrals/{provider_customer_id}")
+            result = await self._request("GET", f"/v2/customers/{provider_customer_id}")
             return BillingCustomer(
                 provider_customer_id=result.get("id", ""),
-                email="",
+                email=result.get("email_address", ""),
                 name=result.get("name", {}).get("given_name") if result.get("name") else None,
             )
         except BillingProviderError:
@@ -239,21 +239,14 @@ class PayPalBillingProvider(BillingProvider):
         at_period_end: bool = True,
     ) -> BillingSubscription:
         reason = "Cancelled by user" if at_period_end else "Immediate cancellation"
-        if not at_period_end:
-            await self._request("POST", f"/v1/billing/subscriptions/{provider_subscription_id}/cancel", {
-                "reason": reason,
-            })
-        else:
-            await self._request("POST", f"/v1/billing/subscriptions/{provider_subscription_id}/suspend", {
-                "reason": reason,
-            })
-
-        status = "CANCELLED" if not at_period_end else "SUSPENDED"
+        await self._request("POST", f"/v1/billing/subscriptions/{provider_subscription_id}/cancel", {
+            "reason": reason,
+        })
         return BillingSubscription(
             provider_subscription_id=provider_subscription_id,
             provider_customer_id="",
             provider_plan_id="",
-            status=status,
+            status="CANCELLED",
         )
 
     async def get_subscription(self, provider_subscription_id: str) -> Optional[BillingSubscription]:

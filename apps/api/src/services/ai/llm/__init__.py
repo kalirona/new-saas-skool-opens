@@ -7,6 +7,7 @@ Embeddings follow the same provider where supported (see ``embeddings.py``).
 """
 
 from src.services.ai.llm.client import (
+    GenerationOutput,
     attachments_to_parts,
     generate,
     generate_stream,
@@ -25,6 +26,7 @@ from src.services.ai.llm.tiers import (
 )
 
 __all__ = [
+    "GenerationOutput",
     "generate",
     "generate_stream",
     "to_message_history",

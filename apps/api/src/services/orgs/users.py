@@ -572,6 +572,21 @@ async def update_user_role(
     # RBAC check
     await rbac_check(request, org.org_uuid, current_user, "update", db_session)
 
+    # Escalation guard: caller cannot assign a role higher (lower role_id) than their own.
+    caller_org = (
+        await db_session.execute(
+            select(UserOrganization).where(
+                UserOrganization.user_id == current_user.id,
+                UserOrganization.org_id == org.id,
+            )
+        )
+    ).scalars().first()
+    if caller_org and role_id < caller_org.role_id:
+        raise HTTPException(
+            status_code=403,
+            detail="You cannot assign a role with higher permissions than your own",
+        )
+
     # Check if user is the last admin and if the new role is not admin
     statement = select(UserOrganization).where(
         UserOrganization.org_id == org.id, UserOrganization.role_id == ADMIN_ROLE_ID

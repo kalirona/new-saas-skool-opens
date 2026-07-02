@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 from sqlmodel import select, func
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from src.services.ai.prompt_sanitizer import sanitize_user_input
 from src.services.ai.studio.conversation import ConversationManager
 from src.services.ai.studio.generation_service import AIGenerationService
 
@@ -140,8 +141,9 @@ class WorkspaceAssistant:
         context_text = self._build_context_prompt(sources)
         self._conversation.add_user_message(query)
 
+        sanitized_query = sanitize_user_input(query)
         full_user_prompt = (
-            f"User question: {query}\n\n"
+            f"User question: {sanitized_query}\n\n"
             f"Workspace context:\n{context_text}\n"
             f"{RAG_PLACEHOLDER_NOTE if not rag_enabled else ''}"
         )
@@ -178,8 +180,9 @@ class WorkspaceAssistant:
         sources, needs_rag = await self._query_context(query, entity_type, org_id, db_session, rag_enabled)
         context_text = self._build_context_prompt(sources)
 
+        sanitized_query = sanitize_user_input(query)
         full_user_prompt = (
-            f"User question: {query}\n\n"
+            f"User question: {sanitized_query}\n\n"
             f"Workspace context:\n{context_text}\n"
             f"{RAG_PLACEHOLDER_NOTE if not rag_enabled else ''}"
         )

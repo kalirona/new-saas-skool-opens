@@ -11,6 +11,7 @@ from src.security.auth import resolve_acting_user_id
 from src.db.courses.activities import Activity, ActivityRead
 from src.services.ai.base import get_chat_session_history
 from src.services.ai.llm import model_for_tier
+from src.services.ai.prompt_sanitizer import sanitize_user_input
 from src.services.ai.schemas.editor import (
     StartEditorAIChatSession,
     SendEditorAIChatMessage,
@@ -179,14 +180,17 @@ async def editor_ai_start_chat_session_stream(
     content_text = _serialize_tiptap_content_to_text(chat_session_object.current_content)
 
     # Build context with selected text if provided
+    sanitized_course = sanitize_user_input(course.name)[:200]
+    sanitized_activity = sanitize_user_input(activity.name)[:200]
     context_parts = [
-        f"Course: {course.name}",
-        f"Lecture: {activity.name}",
+        f"Course: {sanitized_course}",
+        f"Lecture: {sanitized_activity}",
         f"\nCurrent Editor Content:\n{content_text[:4000]}"  # Limit content size
     ]
 
     if chat_session_object.selected_text:
-        context_parts.append(f"\n\nUser has selected this text (your content will REPLACE this selection): \"{chat_session_object.selected_text}\"")
+        sanitized_selected = sanitize_user_input(chat_session_object.selected_text[:1000])
+        context_parts.append(f"\n\nUser has selected this text (your content will REPLACE this selection): \"{sanitized_selected}\"")
     else:
         context_parts.append("\n\nNo text is selected. Your content will be INSERTED at the cursor position.")
 
@@ -204,7 +208,7 @@ async def editor_ai_start_chat_session_stream(
         "ai_model": ai_model,
         "ai_friendly_text": ai_friendly_text,
         "system_prompt": EDITOR_AI_SYSTEM_PROMPT,
-        "user_message": chat_session_object.message,
+        "user_message": sanitize_user_input(chat_session_object.message),
         "current_content": chat_session_object.current_content,
         "selected_text": chat_session_object.selected_text,
     }
@@ -287,14 +291,17 @@ async def editor_ai_send_message_stream(
     content_text = _serialize_tiptap_content_to_text(chat_session_object.current_content)
 
     # Build context with selected text if provided
+    sanitized_course = sanitize_user_input(course.name)[:200]
+    sanitized_activity = sanitize_user_input(activity.name)[:200]
     context_parts = [
-        f"Course: {course.name}",
-        f"Lecture: {activity.name}",
+        f"Course: {sanitized_course}",
+        f"Lecture: {sanitized_activity}",
         f"\nCurrent Editor Content:\n{content_text[:4000]}"  # Limit content size
     ]
 
     if chat_session_object.selected_text:
-        context_parts.append(f"\n\nUser has selected this text (your content will REPLACE this selection): \"{chat_session_object.selected_text}\"")
+        sanitized_selected = sanitize_user_input(chat_session_object.selected_text[:1000])
+        context_parts.append(f"\n\nUser has selected this text (your content will REPLACE this selection): \"{sanitized_selected}\"")
     else:
         context_parts.append("\n\nNo text is selected. Your content will be INSERTED at the cursor position.")
 
@@ -312,7 +319,7 @@ async def editor_ai_send_message_stream(
         "ai_model": ai_model,
         "ai_friendly_text": ai_friendly_text,
         "system_prompt": EDITOR_AI_SYSTEM_PROMPT,
-        "user_message": chat_session_object.message,
+        "user_message": sanitize_user_input(chat_session_object.message),
         "current_content": chat_session_object.current_content,
         "selected_text": chat_session_object.selected_text,
     }

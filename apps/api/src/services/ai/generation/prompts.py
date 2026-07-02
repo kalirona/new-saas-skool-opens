@@ -1,5 +1,7 @@
 """Prompt templates for AI course generation."""
 
+from src.services.ai.prompt_sanitizer import sanitize_user_input
+
 
 def build_course_structure_system_prompt(language: str = "en") -> str:
     """System prompt for generating a full course outline (modules + lessons)."""
@@ -12,7 +14,7 @@ Output MUST be valid JSON matching the GeneratedCourse schema exactly."""
 
 def build_course_structure_user_prompt(topic: str, language: str = "en") -> str:
     """User prompt for generating a course structure."""
-    return f"""Create a detailed course outline for: {topic}
+    return f"""Create a detailed course outline for: {sanitize_user_input(topic)}
 Generate the response entirely in {language}.
 Include 3-7 modules, each with 2-5 lessons. Each lesson should be 5-15 minutes."""
 
@@ -39,10 +41,10 @@ def build_lesson_content_user_prompt(
     """User prompt for generating lesson content."""
     parts = [
         f"Generate lesson content for the following in {language}:",
-        f"Course: {course_title}",
-        f"Module: {module_title}",
-        f"Lesson: {lesson_title}",
-        f"Description: {lesson_description}",
+        f"Course: {sanitize_user_input(course_title)}",
+        f"Module: {sanitize_user_input(module_title)}",
+        f"Lesson: {sanitize_user_input(lesson_title)}",
+        f"Description: {sanitize_user_input(lesson_description)}",
     ]
     if include_quiz:
         parts.append("Include a blockQuiz at the end with 3-5 multiple-choice questions to assess understanding.")
@@ -67,9 +69,9 @@ def build_quiz_user_prompt(
 ) -> str:
     """User prompt for generating a quiz."""
     return f"""Generate a {num_questions}-question quiz in {language} for:
-Course: {course_title}
-Module: {module_title}
-Lesson: {lesson_title}
-Lesson Description: {lesson_description}
+Course: {sanitize_user_input(course_title)}
+Module: {sanitize_user_input(module_title)}
+Lesson: {sanitize_user_input(lesson_title)}
+Lesson Description: {sanitize_user_input(lesson_description)}
 
 Each question must be multiple_choice type with 4 answers and exactly one correct."""

@@ -230,6 +230,13 @@ class OnboardingRequest(BaseModel):
     cancel_url: str
 
 
+class MerchantStatusRequest(BaseModel):
+    merchant_id: str
+    status: str
+    permissions_granted: bool = False
+    account_status: str = ""
+
+
 @router.post(
     "/payments/{org_id}/paypal/merchant/onboarding",
     summary="Initiate PayPal merchant onboarding",
@@ -273,7 +280,7 @@ async def api_paypal_merchant_onboarding(
 async def api_update_paypal_merchant_status(
     request: Request,
     org_id: int,
-    body: dict,
+    body: MerchantStatusRequest,
     current_user: PublicUser = Depends(get_current_user),
     db_session: AsyncSession = Depends(get_db_session),
 ):
@@ -473,13 +480,16 @@ async def api_paypal_webhook(
             user_id = int(user_id_str) if user_id_str else 0
 
             status = data.get("status", "")
-            local_status = "trial" if status == "APPROVAL_PENDING" else "active"
             if status == "ACTIVE":
                 local_status = "active"
+            elif status == "APPROVAL_PENDING":
+                local_status = "pending"
             elif status in ("CANCELLED", "SUSPENDED"):
                 local_status = "cancelled"
             elif status == "EXPIRED":
                 local_status = "expired"
+            else:
+                local_status = "pending"
 
             member = await find_member_by_subscription(db_session, sub_id)
             if member:

@@ -269,14 +269,18 @@ class StripeBillingProvider(BillingProvider):
         metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         try:
-            session = stripe.checkout.Session.create(
-                customer=provider_customer_id,
-                mode="subscription",
-                line_items=[{"price": provider_plan_id, "quantity": 1}],
-                success_url=success_url,
-                cancel_url=cancel_url,
-                metadata=metadata or {},
-            )
+            checkout_params = {
+                "customer": provider_customer_id,
+                "mode": "subscription",
+                "line_items": [{"price": provider_plan_id, "quantity": 1}],
+                "success_url": success_url,
+                "cancel_url": cancel_url,
+                "metadata": metadata or {},
+            }
+        trial_days = (metadata or {}).get("trial_days", 0)
+        if trial_days:
+            checkout_params["subscription_data"] = {"trial_period_days": int(trial_days)}
+        session = stripe.checkout.Session.create(**checkout_params)
             return session.url
         except stripe.StripeError as e:
             raise BillingProviderError(str(e), provider="stripe", code=e.code)

@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Optional
+from urllib.parse import urlparse
 
 import yaml
 
@@ -75,7 +76,8 @@ class BackupService:
         try:
             _ensure_backup_dir()
             env = os.environ.copy()
-            env["PGPASSWORD"] = db_url.split("@")[1].split(":")[0] if "@" in db_url else ""
+            parsed = urlparse(db_url)
+            env["PGPASSWORD"] = parsed.password or ""
 
             cmd = [
                 "pg_dump",
@@ -208,11 +210,19 @@ class BackupService:
 
         try:
             env = os.environ.copy()
-            if "@" in db_url:
-                password = db_url.split("@")[1].split(":")[0] if ":" in db_url.split("@")[0] else ""
-                env["PGPASSWORD"] = password
+            parsed = urlparse(db_url)
+            env["PGPASSWORD"] = parsed.password or ""
 
-            cmd = ["pg_restore", "--no-owner", "--no-acl", "--clean", "--if-exists", "-d", db_url, str(path)]
+            # Detect format: compressed SQL (.sql.gz) → psql,  custom (.dump) → pg_restore
+            name = path.name
+            if name.endswith(".sql.gz") or name.endswith(".sql"):
+                if name.endswith(".gz"):
+                    cmd = ["sh", "-c", f"zcat {str(path)} | psql {db_url}"]
+                else:
+                    cmd = ["psql", "-f", str(path), db_url]
+            else:
+                cmd = ["pg_restore", "--no-owner", "--no-acl", "--clean", "--if-exists", "-d", db_url, str(path)]
+
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
             if proc.returncode != 0:
                 logger.error("Database restore failed: %s", proc.stderr[:1000])
@@ -223,6 +233,20 @@ class BackupService:
         except Exception as e:
             logger.error("Database restore failed: %s", e)
             return False
+
+    def _safe_extract(self, tar: tarfile.TarFile, target_dir: Path) -> None:
+        """Extract a tar archive while blocking path traversal."""
+        target_dir = target_dir.resolve()
+        target_dir.mkdir(parents=True, exist_ok=True)
+        for member in tar.getmembers():
+            # Resolve the member path and ensure it's within target_dir
+            member_path = target_dir / member.name
+            resolved = member_path.resolve()
+            if not str(resolved).startswith(str(target_dir)):
+                raise ValueError(
+                    f"Path traversal blocked: {member.name} resolves outside {target_dir}"
+                )
+            tar.extract(member, path=target_dir)
 
     async def restore_storage(self, backup_path: str) -> bool:
         path = Path(backup_path)
@@ -236,7 +260,7 @@ class BackupService:
                 shutil.rmtree(str(content_dir))
 
             with tarfile.open(path, "r:gz") as tar:
-                tar.extractall(".")
+                self._safe_extract(tar, Path("."))
 
             logger.info("Storage restored from %s", backup_path)
             return True

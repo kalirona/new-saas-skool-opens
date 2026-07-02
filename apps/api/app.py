@@ -14,7 +14,7 @@ import logging
 import uvicorn
 import sentry_sdk
 from sentry_sdk.integrations.logging import LoggingIntegration
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.gzip import GZipMiddleware
 
 from config.branding import get_app_name
@@ -29,6 +29,8 @@ from src.security.csrf import CSRFProtectionMiddleware
 from src.router import v1_router
 from src.routers.content_files import router as content_files_router
 from src.routers.local_content import router as local_content_router
+from src.core.telemetry import setup_opentelemetry
+from src.core.middleware.logging import StructuredLoggingMiddleware
 
 
 learnhouse_config: LearnHouseConfig = get_learnhouse_config()
@@ -58,8 +60,12 @@ app = FastAPI(
     version="1.2.7",
 )
 
+# OpenTelemetry (must be set up before instrumenting the app)
+_otel_enabled = setup_opentelemetry(learnhouse_config.general_config.env)
+
 # Middleware — order matters (outermost first)
 app.add_middleware(RequestIDMiddleware)
+app.add_middleware(StructuredLoggingMiddleware)
 app.add_middleware(RequestTimingMiddleware, slow_threshold_ms=1000.0)
 configure_cors(app)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
@@ -77,6 +83,15 @@ if learnhouse_config.hosting_config.content_delivery.type == "s3api":
     app.include_router(content_files_router)
 else:
     app.include_router(local_content_router)
+
+# Instrument FastAPI with OpenTelemetry if enabled
+if _otel_enabled:
+    try:
+        from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+        FastAPIInstrumentor.instrument_app(app)
+    except Exception as e:
+        import logging as _otel_log
+        _otel_log.getLogger(__name__).warning("Failed to instrument FastAPI: %s", e)
 
 app.include_router(v1_router)
 

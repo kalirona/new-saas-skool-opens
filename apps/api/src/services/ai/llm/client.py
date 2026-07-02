@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import base64
 import logging
+from dataclasses import dataclass, field
 from typing import Any, AsyncGenerator, Optional, Sequence, Type, Union
 
 from pydantic_ai import Agent
@@ -26,6 +27,23 @@ from pydantic_ai.messages import (
 from pydantic_ai.settings import ModelSettings
 
 from src.services.ai.llm.provider import build_model
+
+
+@dataclass
+class GenerationOutput:
+    """Result of a single generation with token usage info."""
+    output: Any
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    total_tokens: int = 0
+
+    @property
+    def usage(self) -> dict:
+        return {
+            "prompt_tokens": self.prompt_tokens,
+            "completion_tokens": self.completion_tokens,
+            "total_tokens": self.total_tokens,
+        }
 
 logger = logging.getLogger(__name__)
 
@@ -120,11 +138,12 @@ async def generate(
     max_tokens: Optional[int] = None,
     temperature: Optional[float] = None,
     timeout: float = DEFAULT_TIMEOUT,
-) -> Any:
+) -> GenerationOutput:
     """Run a single (non-streaming) generation.
 
-    Returns plain text when ``output_type`` is ``str``, or a validated instance of
-    ``output_type`` (a Pydantic model) for structured output.
+    Returns a ``GenerationOutput`` with ``.output`` containing plain text (when
+    ``output_type`` is ``str``) or a validated Pydantic model instance, plus
+    ``.prompt_tokens`` / ``.completion_tokens`` / ``.total_tokens``.
     """
     agent = _agent(model_name, system_prompt, output_type)
     result = await agent.run(
@@ -132,7 +151,13 @@ async def generate(
         message_history=to_message_history(history) or None,
         model_settings=_settings(max_tokens, temperature, timeout),
     )
-    return result.output
+    usage = result.usage()
+    return GenerationOutput(
+        output=result.data,
+        prompt_tokens=getattr(usage, "request_tokens", 0),
+        completion_tokens=getattr(usage, "response_tokens", 0),
+        total_tokens=getattr(usage, "total_tokens", 0),
+    )
 
 
 async def generate_stream(

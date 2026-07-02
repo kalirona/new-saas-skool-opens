@@ -134,6 +134,13 @@ else:
     def receive_checkin(dbapi_connection, connection_record):
         logging.debug("Connection returned to pool")
 
+    # Install slow query logging on the sync engine
+    try:
+        from src.services.monitoring.slow_queries import install_slow_query_logging
+        install_slow_query_logging(engine.sync_engine)
+    except ImportError:
+        pass  # monitoring module not available
+
 
 _async_session_factory = async_sessionmaker(
     engine,

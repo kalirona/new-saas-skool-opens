@@ -1,11 +1,10 @@
 from typing import Optional, AsyncGenerator, List
 from uuid import uuid4
 import logging
-import redis
 import json
 import base64
 
-from config.config import get_learnhouse_config
+from src.core.redis import get_redis_client
 from src.services.ai.llm import generate_stream, attachments_to_parts, model_for_tier
 from src.services.ai.schemas.courseplanning import (
     CoursePlan,
@@ -15,8 +14,6 @@ from src.services.ai.schemas.courseplanning import (
 )
 
 logger = logging.getLogger(__name__)
-
-LH_CONFIG = get_learnhouse_config()
 
 # Redis key pattern for course planning sessions
 COURSE_PLANNING_SESSION_KEY = "course_planning_session:{session_uuid}"
@@ -31,14 +28,8 @@ ENABLE_ACTIVITY_CONTENT_GENERATION = True
 
 
 def get_redis_connection():
-    """Get Redis connection if available"""
-    redis_conn_string = LH_CONFIG.redis_config.redis_connection_string
-    if redis_conn_string:
-        try:
-            return redis.from_url(redis_conn_string)
-        except Exception as e:
-            logger.error("Failed to connect to Redis: %s", e, exc_info=True)
-    return None
+    """Get Redis client from shared pool if available"""
+    return get_redis_client()
 
 
 def get_course_planning_session(session_uuid: str) -> Optional[CoursePlanningSessionData]:

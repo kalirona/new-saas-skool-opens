@@ -1,11 +1,11 @@
 from typing import Optional, AsyncGenerator
 from uuid import uuid4
 import logging
-import redis
 import json
 
-from config.config import get_learnhouse_config
+from src.core.redis import get_redis_client
 from src.services.ai.llm import generate_stream, model_for_tier
+from src.services.ai.prompt_sanitizer import sanitize_user_input
 from src.services.ai.schemas.magicblocks import (
     MagicBlockContext,
     MagicBlockSessionData,
@@ -13,8 +13,6 @@ from src.services.ai.schemas.magicblocks import (
 )
 
 logger = logging.getLogger(__name__)
-
-LH_CONFIG = get_learnhouse_config()
 
 # Redis key pattern for MagicBlock sessions
 MAGICBLOCK_SESSION_KEY = "magicblock_session:{session_uuid}"
@@ -25,14 +23,8 @@ MAX_ITERATIONS = 6
 
 
 def get_redis_connection():
-    """Get Redis connection if available"""
-    redis_conn_string = LH_CONFIG.redis_config.redis_connection_string
-    if redis_conn_string:
-        try:
-            return redis.from_url(redis_conn_string)
-        except Exception as e:
-            logger.error("Failed to connect to Redis: %s", e, exc_info=True)
-    return None
+    """Get Redis client from shared pool if available"""
+    return get_redis_client()
 
 
 def get_magicblock_session(session_uuid: str) -> Optional[MagicBlockSessionData]:
@@ -231,12 +223,12 @@ CURRENT HTML CODE:
 ```
 
 USER REQUEST:
-{prompt}
+{sanitize_user_input(prompt)}
 
 Please modify the HTML code above according to the user's request. Output ONLY the complete updated HTML code, starting with <!DOCTYPE html> and ending with </html>. Do not include any explanations."""
         else:
             # First generation - just use the prompt
-            user_prompt = prompt
+            user_prompt = sanitize_user_input(prompt)
 
         full_response = ""
         async for chunk in generate_stream(

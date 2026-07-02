@@ -36,6 +36,7 @@ from src.routers.podcasts import podcasts as podcasts_router_module
 from src.routers.payments import stripe_router as stripe_payments_router
 from src.routers.payments import paypal_router as paypal_payments_router
 from src.routers.payments import billing_router as billing_payments_router
+from src.routers import operations
 from src.routers.podcasts import episodes as episodes_router_module
 from src.routers.boards import boards as boards_router_module
 from src.routers.playgrounds import playgrounds as playgrounds_router_module
@@ -393,6 +394,13 @@ v1_router.include_router(
     health.router,
     prefix="/health",
     tags=["health"],
+)
+
+# Operations dashboard (superadmin)
+v1_router.include_router(
+    operations.router,
+    prefix="/operations",
+    tags=["operations"],
 )
 
 # Dev Routes

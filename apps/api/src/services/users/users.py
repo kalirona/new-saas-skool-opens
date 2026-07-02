@@ -220,11 +220,13 @@ async def create_user_with_invite(
 
     # Check if invite code contains UserGroup
     if inviteCode.get("usergroup_id"): # type: ignore
-        # Add user to UserGroup
+        # Add user to UserGroup — use the admin who created the invite as the acting user
+        # so RBAC checks apply. Fall back to the newly created user's own context.
+        acting_user = current_user if not isinstance(current_user, InternalUser) else user
         await add_users_to_usergroup(
             request,
             db_session,
-            InternalUser(id=0),
+            acting_user,
             int(inviteCode.get("usergroup_id")), # type: ignore / Convert to int since usergroup_id is expected to be int
             str(user.id),
         )

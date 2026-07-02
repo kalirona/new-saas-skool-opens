@@ -2,13 +2,19 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
+from src.services.ai.prompt_sanitizer import sanitize_user_input
+
 
 class PromptTemplate:
     def __init__(self, template: str):
         self.template = template
 
     def render(self, **kwargs: Any) -> str:
-        return self.template.format(**kwargs)
+        sanitized = {
+            k: (sanitize_user_input(v) if isinstance(v, str) else v)
+            for k, v in kwargs.items()
+        }
+        return self.template.format(**sanitized)
 
 
 SYSTEM_PROMPTS: dict[str, str] = {
@@ -75,7 +81,11 @@ class PromptTemplateService:
         template = USER_PROMPTS.get(template_key)
         if not template:
             raise ValueError(f"Unknown prompt template: {template_key}")
-        return template.format(**kwargs)
+        sanitized = {
+            k: (sanitize_user_input(v) if isinstance(v, str) else v)
+            for k, v in kwargs.items()
+        }
+        return template.format(**sanitized)
 
     @staticmethod
     def register_template(key: str, template: str):

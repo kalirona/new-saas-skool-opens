@@ -47,6 +47,12 @@ dependencies = [
     "llama-index-core==0.14.22",
     "pgvector==0.4.2",
     "pypdf==6.13.3",
+    "opentelemetry-distro==0.53b0",
+    "opentelemetry-exporter-otlp-proto-http==1.32.0",
+    "opentelemetry-instrumentation-fastapi==0.53b0",
+    "opentelemetry-instrumentation-sqlalchemy==0.53b0",
+    "opentelemetry-instrumentation-redis==0.53b0",
+    "opentelemetry-instrumentation-httpx==0.53b0",
 ]
 
 [tool.ruff]
@@ -71,14 +77,12 @@ filterwarnings = [
 source = ["src"]
 omit = [
     "src/tests/*",
-    "src/services/ai/*",
-    "src/routers/ai/*",
     "src/routers/code_execution.py",
     "src/routers/stream.py",
 ]
 
 [tool.coverage.report]
-fail_under = 25
+fail_under = 35
 show_missing = true
 exclude_lines = [
     "pragma: no cover",

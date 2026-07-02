@@ -30,10 +30,10 @@ class AnthropicProvider(AIProvider):
             temperature=request.temperature,
         )
         return GenerationResult(
-            content=result,
+            content=result.output,
             model_name=model_name,
             provider=self.provider_name,
-            usage={},
+            usage=result.usage,
         )
 
     async def generate_stream(
@@ -51,4 +51,9 @@ class AnthropicProvider(AIProvider):
             yield chunk
 
     async def count_tokens(self, text: str) -> int:
-        return len(text.split())
+        try:
+            from anthropic import Anthropic
+            client = Anthropic(api_key="")
+            return client.count_tokens(text)
+        except Exception:
+            return len(text.split())

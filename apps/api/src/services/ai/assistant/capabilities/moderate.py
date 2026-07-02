@@ -19,7 +19,7 @@ async def moderate_content(req: ModerateRequest, model_name: str, language: str 
         categories=[c.value for c in req.categories],
     )
 
-    result = await generate(
+    gen_result = await generate(
         model_name=model_name,
         user_prompt=user_prompt,
         system_prompt=system_prompt,
@@ -27,4 +27,4 @@ async def moderate_content(req: ModerateRequest, model_name: str, language: str 
         temperature=0.1,
         max_tokens=2048,
     )
-    return result
+    return gen_result.output

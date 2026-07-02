@@ -8,7 +8,7 @@ from uuid import uuid4
 from datetime import datetime
 from sqlmodel import select, func
 from sqlmodel.ext.asyncio.session import AsyncSession
-from fastapi import HTTPException, Request
+from fastapi import HTTPException, Request, UploadFile
 
 from src.db.users import PublicUser, AnonymousUser, APITokenUser
 from src.db.organizations import Organization
@@ -64,6 +64,13 @@ def _now_iso() -> str:
     return datetime.now().isoformat()
 
 
+def _iso_to_dt(iso_str: str) -> Optional[datetime]:
+    try:
+        return datetime.fromisoformat(iso_str)
+    except (ValueError, TypeError):
+        return None
+
+
 async def _create_meeting_for_event(
     event: Event,
 ) -> Dict[str, Any]:
@@ -73,21 +80,56 @@ async def _create_meeting_for_event(
     if not MeetingProviderRegistry.is_supported(event.meeting_provider):
         return {}
 
-    provider_cls = MeetingProviderRegistry.get(event.meeting_provider)
-    provider = provider_cls({})
+    try:
+        provider_cls = MeetingProviderRegistry.get(event.meeting_provider)
+        provider = provider_cls({})
 
-    config = MeetingConfig(
-        title=event.title,
-        description=event.description,
-        start_time=event.start_date,
-        duration_minutes=event.duration_minutes,
-        timezone=event.timezone,
-    )
-    meeting = await provider.create_meeting(config)
-    return {
-        "meeting_url": meeting.join_url,
-        "provider_meeting_id": meeting.provider_meeting_id,
-    }
+        config = MeetingConfig(
+            title=event.title,
+            description=event.description,
+            start_time=event.start_date,
+            duration_minutes=event.duration_minutes,
+            timezone=event.timezone,
+        )
+        meeting = await provider.create_meeting(config)
+        return {
+            "meeting_url": meeting.join_url,
+            "provider_meeting_id": meeting.provider_meeting_id,
+        }
+    except Exception as e:
+        logger.warning("Failed to create meeting via %s: %s", event.meeting_provider, e)
+        return {}
+
+
+async def _update_meeting_for_event(
+    event: Event,
+    provider_meeting_id: str,
+) -> Dict[str, Any]:
+    if not event.meeting_provider or event.meeting_provider == "custom_url":
+        return {}
+
+    if not MeetingProviderRegistry.is_supported(event.meeting_provider):
+        return {}
+
+    try:
+        provider_cls = MeetingProviderRegistry.get(event.meeting_provider)
+        provider = provider_cls({})
+
+        config = MeetingConfig(
+            title=event.title,
+            description=event.description,
+            start_time=event.start_date,
+            duration_minutes=event.duration_minutes,
+            timezone=event.timezone,
+        )
+        meeting = await provider.update_meeting(provider_meeting_id, config)
+        return {
+            "meeting_url": meeting.join_url,
+            "provider_meeting_id": meeting.provider_meeting_id,
+        }
+    except Exception as e:
+        logger.warning("Failed to update meeting via %s: %s", event.meeting_provider, e)
+        return {}
 
 
 async def create_event(
@@ -225,6 +267,13 @@ async def get_event(
 
     results = await asyncio.gather(*[t for t in tasks if t is not None])
 
+    # Check membership access for detail view (non-admin users)
+    if not isinstance(current_user, (AnonymousUser,)):
+        user_id = resolve_acting_user_id(current_user)
+        has_access = await check_event_membership_access(event, user_id, db_session)
+        if not has_access:
+            detail.is_restricted = True
+
     idx = 0
     if event.community_id:
         community = results[idx].scalars().first()
@@ -282,7 +331,7 @@ async def get_events_by_org(
     if status:
         statement = statement.where(Event.status == status)
     if upcoming:
-        today = str(datetime.now().date())
+        today = datetime.now().isoformat()[:10]
         statement = statement.where(Event.start_date >= today)
     if search:
         statement = statement.where(Event.title.ilike(f"%{search}%"))
@@ -302,7 +351,13 @@ async def get_events_by_org(
     statement = statement.offset(offset).limit(limit)
     events = (await db_session.execute(statement)).scalars().all()
 
-    return [EventRead.model_validate(e.model_dump()) for e in events], total
+    # Filter by membership access for non-admin users
+    user_id = resolve_acting_user_id(current_user)
+    filtered = []
+    for e in events:
+        if await check_event_membership_access(e, user_id, db_session):
+            filtered.append(e)
+    return [EventRead.model_validate(e.model_dump()) for e in filtered], total
 
 
 async def update_event(
@@ -331,6 +386,43 @@ async def update_event(
     db_session.add(event)
     await db_session.commit()
     await db_session.refresh(event)
+
+    # Notify meeting provider of changes
+    if event.meeting_provider and event.meeting_provider != "custom_url":
+        provider_meeting_id = getattr(event, "provider_meeting_id", None) or ""
+        if provider_meeting_id:
+            await _update_meeting_for_event(event, provider_meeting_id)
+
+    # Notify RSVP'd users of cancellation
+    if event_object.status == "cancelled":
+        from src.db.notifications.notifications import NotificationCreate
+        from src.services.notifications.notifications import create_notification
+        from src.db.events.rsvps import RSVP
+        rsvps = (
+            await db_session.execute(
+                select(RSVP).where(
+                    RSVP.event_id == event.id,
+                    RSVP.status.in_(["going", "maybe"]),
+                )
+            )
+        ).scalars().all()
+        for rsvp_entry in rsvps:
+            try:
+                await create_notification(
+                    NotificationCreate(
+                        notification_type="event_cancelled",
+                        title=f"Event cancelled: {event.title}",
+                        message=f"The event scheduled for {event.start_date} has been cancelled.",
+                        user_id=rsvp_entry.user_id,
+                        org_id=event.org_id,
+                        actor_id=0,
+                        resource_uuid=event.event_uuid,
+                        link=f"/dash/events/{event.event_uuid}",
+                    ),
+                    db_session,
+                )
+            except Exception:
+                logger.warning("Failed to send cancellation notification", exc_info=True)
 
     return EventRead.model_validate(event.model_dump())
 
@@ -366,7 +458,7 @@ async def get_upcoming_events(
     db_session: AsyncSession,
     limit: int = 10,
 ) -> List[EventRead]:
-    today = str(datetime.now().date())
+    today = datetime.now().isoformat()[:10]
     statement = (
         select(Event)
         .where(Event.org_id == org_id, Event.start_date >= today)
@@ -374,7 +466,13 @@ async def get_upcoming_events(
         .limit(limit)
     )
     events = (await db_session.execute(statement)).scalars().all()
-    return [EventRead.model_validate(e.model_dump()) for e in events]
+    # Filter by membership access
+    user_id = resolve_acting_user_id(current_user)
+    filtered = []
+    for e in events:
+        if await check_event_membership_access(e, user_id, db_session):
+            filtered.append(e)
+    return [EventRead.model_validate(e.model_dump()) for e in filtered]
 
 
 # ── RSVP ──────────────────────────────────────────────────────────────────
@@ -400,6 +498,9 @@ async def rsvp_event(
     if event.status == "cancelled":
         raise HTTPException(status_code=400, detail="Event is cancelled")
 
+    if not event.rsvp_enabled:
+        raise HTTPException(status_code=400, detail="RSVPs are disabled for this event")
+
     await require_org_membership(resolve_acting_user_id(current_user), event.org_id, db_session)
     has_access = await check_event_membership_access(event, current_user.id, db_session)
     if not has_access:
@@ -418,7 +519,7 @@ async def rsvp_event(
     ).scalars().first()
 
     capacity = event.capacity
-    if capacity and rsvp_data.status in ("going", "maybe") and not existing:
+    if capacity and rsvp_data.status in ("going", "maybe"):
         going_count = (
             await db_session.execute(
                 select(func.count(RSVP.id)).where(
@@ -431,25 +532,53 @@ async def rsvp_event(
             rsvp_data.status = "waitlist"
 
     now = _now_iso()
+    is_waitlisted = rsvp_data.status == "waitlist"
     if existing:
         existing.status = rsvp_data.status
         existing.updated_at = now
         db_session.add(existing)
         await db_session.commit()
         await db_session.refresh(existing)
-        return RSVPRead.model_validate(existing.model_dump())
+        result = RSVPRead.model_validate(existing.model_dump())
+    else:
+        rsvp = RSVP(
+            event_id=event.id,
+            user_id=current_user.id,
+            status=rsvp_data.status,
+            created_at=now,
+            updated_at=now,
+        )
+        db_session.add(rsvp)
+        await db_session.commit()
+        await db_session.refresh(rsvp)
+        result = RSVPRead.model_validate(rsvp.model_dump())
 
-    rsvp = RSVP(
-        event_id=event.id,
-        user_id=current_user.id,
-        status=rsvp_data.status,
-        created_at=now,
-        updated_at=now,
-    )
-    db_session.add(rsvp)
-    await db_session.commit()
-    await db_session.refresh(rsvp)
-    return RSVPRead.model_validate(rsvp.model_dump())
+    # Auto-schedule reminder for confirmed RSVPs
+    if rsvp_data.status == "going" and not is_waitlisted:
+        await schedule_reminders_for_event(event, db_session)
+
+    # Notify auto-waitlisted user
+    if is_waitlisted:
+        from src.db.notifications.notifications import NotificationCreate
+        from src.services.notifications.notifications import create_notification
+        try:
+            await create_notification(
+                NotificationCreate(
+                    notification_type="event_waitlist",
+                    title=f"Event full: {event.title}",
+                    message="You've been added to the waitlist. We'll notify you if a spot opens.",
+                    user_id=current_user.id,
+                    org_id=event.org_id,
+                    actor_id=current_user.id,
+                    resource_uuid=event.event_uuid,
+                    link=f"/dash/events/{event.event_uuid}",
+                ),
+                db_session,
+            )
+        except Exception:
+            logger.warning("Failed to send waitlist notification", exc_info=True)
+
+    return result
 
 
 async def get_event_rsvps(
@@ -489,14 +618,13 @@ async def get_event_statuses() -> list:
 # ── TASK 4 — RSVP: waitlist + attendance ──────────────────────────────────
 
 
-async def rsvp_event_with_waitlist(
+async def self_checkin_attendance(
     request: Request,
     event_uuid: str,
-    rsvp_data: RSVPCreate,
     current_user: Union[PublicUser, AnonymousUser, APITokenUser],
     db_session: AsyncSession,
 ) -> RSVPRead:
-    """RSVP with capacity check — auto-waitlist if event is full."""
+    """Allow an attendee to check themselves in."""
     await authorization_verify_if_user_is_anon(current_user.id)
 
     event = (
@@ -506,10 +634,8 @@ async def rsvp_event_with_waitlist(
     ).scalars().first()
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
-    if event.status == "cancelled":
-        raise HTTPException(status_code=400, detail="Event is cancelled")
 
-    existing = (
+    rsvp = (
         await db_session.execute(
             select(RSVP).where(
                 RSVP.event_id == event.id,
@@ -517,36 +643,12 @@ async def rsvp_event_with_waitlist(
             )
         )
     ).scalars().first()
+    if not rsvp:
+        raise HTTPException(status_code=400, detail="You have not RSVP'd to this event")
 
-    capacity = event.capacity
-    if capacity and rsvp_data.status in ("going", "maybe"):
-        going_count = (
-            await db_session.execute(
-                select(func.count(RSVP.id)).where(
-                    RSVP.event_id == event.id,
-                    RSVP.status.in_(["going", "maybe"]),
-                )
-            )
-        ).scalar() or 0
-        if going_count >= capacity:
-            rsvp_data.status = "waitlist"
-
-    now = _now_iso()
-    if existing:
-        existing.status = rsvp_data.status
-        existing.updated_at = now
-        db_session.add(existing)
-        await db_session.commit()
-        await db_session.refresh(existing)
-        return RSVPRead.model_validate(existing.model_dump())
-
-    rsvp = RSVP(
-        event_id=event.id,
-        user_id=current_user.id,
-        status=rsvp_data.status,
-        created_at=now,
-        updated_at=now,
-    )
+    rsvp.attended = True
+    rsvp.attended_at = _now_iso()
+    rsvp.updated_at = _now_iso()
     db_session.add(rsvp)
     await db_session.commit()
     await db_session.refresh(rsvp)
@@ -678,8 +780,12 @@ async def get_calendar_events(
     ).all()
     count_by_event = {row[0]: row[1] for row in count_rows}
 
+    # Filter by membership access
+    user_id = resolve_acting_user_id(current_user)
     results = []
     for e in events:
+        if not await check_event_membership_access(e, user_id, db_session):
+            continue
         detail = EventDetailRead.model_validate(e.model_dump())
         detail.attendee_count = count_by_event.get(e.id, 0)
         results.append(detail)
@@ -786,9 +892,8 @@ async def schedule_reminders_for_event(
     from datetime import datetime as dt
 
     created = []
-    try:
-        event_dt = dt.fromisoformat(event.start_date)
-    except (ValueError, TypeError):
+    event_dt = _iso_to_dt(event.start_date)
+    if not event_dt:
         return []
 
     for rsvp_entry in rsvps:
@@ -813,6 +918,57 @@ async def schedule_reminders_for_event(
 
 
 # ── TASK 8 — Recordings ───────────────────────────────────────────────────
+
+
+async def upload_event_recording_file(
+    request: Request,
+    event_uuid: str,
+    file: UploadFile,
+    recording_type: str,
+    title: Optional[str],
+    current_user: Union[PublicUser, AnonymousUser, APITokenUser],
+    db_session: AsyncSession,
+) -> EventRecordingRead:
+    from src.services.utils.upload_content import upload_file
+
+    event = (
+        await db_session.execute(
+            select(Event).where(Event.event_uuid == event_uuid)
+        )
+    ).scalars().first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    await check_resource_access(
+        request, db_session, current_user, event_uuid, AccessAction.UPDATE
+    )
+
+    allowed_types = ["video/mp4", "video/webm", "audio/mp3", "audio/wav", "application/pdf", "image/png", "image/jpeg", "text/plain", "text/markdown"]
+    filename = await upload_file(
+        file=file,
+        directory="event_recordings",
+        type_of_dir="orgs",
+        uuid=str(event.org_id),
+        allowed_types=allowed_types,
+        filename_prefix=f"{event_uuid}_{recording_type}",
+        max_size=500 * 1024 * 1024,
+    )
+
+    recording = EventRecording(
+        event_id=event.id,
+        org_id=event.org_id,
+        recording_type=recording_type or "recording",
+        title=title or file.filename or "Recording",
+        file_url=filename,
+        file_size=0,
+        file_mime=file.content_type or "application/octet-stream",
+        created_at=_now_iso(),
+        updated_at=_now_iso(),
+    )
+    db_session.add(recording)
+    await db_session.commit()
+    await db_session.refresh(recording)
+    return EventRecordingRead.model_validate(recording.model_dump())
 
 
 async def create_recording(

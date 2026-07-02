@@ -5,7 +5,7 @@ Validates file types and content to prevent unrestricted uploads (CWE-434).
 """
 
 import re
-from typing import List, Optional, Tuple
+from typing import BinaryIO, List, Optional, Tuple
 from fastapi import HTTPException, UploadFile
 
 
@@ -244,62 +244,136 @@ MIME_TO_SAFE_EXT = {
 }
 
 
+_MAGIC_READ_SIZE = 16  # bytes needed for magic-byte validation across all types
+_STREAM_CHUNK_SIZE = 8 * 1024 * 1024  # 8 MB
+
+
 def validate_upload(
     file: UploadFile,
     allowed_types: List[str],
-    max_size: Optional[int] = None
+    max_size: Optional[int] = None,
 ) -> Tuple[str, bytes]:
     """
     Validate uploaded file for security and type compliance.
-    
-    Args:
-        file: The uploaded file
-        allowed_types: List of allowed file types ('image', 'video', 'document')
-        max_size: Maximum file size in bytes (auto-determined if None)
-        
-    Returns:
-        Tuple of (mime_type, file_content)
-        
-    Raises:
-        HTTPException: If validation fails
+    Reads content in chunks to bound peak memory to ``_STREAM_CHUNK_SIZE``.
+
+    Returns ``(mime_type, file_content)``.
+    For the streaming-only path see :func:`validate_upload_streaming`.
     """
     if not file or not file.filename:
         raise HTTPException(status_code=400, detail="No file provided")
-    
-    # Read file content once
-    content = file.file.read()
-    file.file.seek(0)
-    
-    # Get file extension and block SVG explicitly
-    ext = '.' + file.filename.split('.')[-1].lower()
-    if ext == '.svg':
-        raise HTTPException(status_code=415, detail="SVG files are not allowed for security reasons")
-    
-    # Find matching file type configuration
-    config = None
-    for file_type in allowed_types:
-        if file_type in FILE_TYPES and ext in FILE_TYPES[file_type]['extensions']:
-            config = FILE_TYPES[file_type]
+
+    _validate_extension(file)
+    config = _resolve_config(file, allowed_types)
+
+    # Read the file in chunks — validate + accumulate
+    chunks: list[bytes] = []
+    total = 0
+    size_limit = max_size or config.get("max_size")
+
+    while True:
+        chunk = file.file.read(_STREAM_CHUNK_SIZE)
+        if not chunk:
             break
-    
-    if not config:
-        allowed_exts = [ext for t in allowed_types for ext in FILE_TYPES.get(t, {}).get('extensions', [])]
-        raise HTTPException(status_code=415, detail=f"File type not allowed. Allowed: {allowed_exts}")
-    
-    # Check file size (skip if no limit set)
-    size_limit = max_size or config.get('max_size')
-    if size_limit and len(content) > size_limit:
-        raise HTTPException(
-            status_code=413,
-            detail=f"File too large ({len(content)/1024/1024:.1f}MB > {size_limit/1024/1024:.1f}MB)"
-        )
-    
-    # Validate file content
-    if not config['validator'](content):
+        total += len(chunk)
+        if size_limit and total > size_limit:
+            raise HTTPException(
+                status_code=413,
+                detail=f"File too large (exceeds {size_limit/1024/1024:.1f}MB limit)",
+            )
+        chunks.append(chunk)
+
+    content = b"".join(chunks)
+
+    # Validate magic bytes
+    if not config["validator"](content):
         raise HTTPException(status_code=415, detail="File appears to be corrupted or invalid")
 
-    canonical_type = EXT_TO_CANONICAL_MIME.get(ext, file.content_type)
+    canonical_type = EXT_TO_CANONICAL_MIME.get(
+        "." + file.filename.split(".")[-1].lower(),
+        file.content_type,
+    )
     return canonical_type, content
+
+
+def validate_upload_streaming(
+    file: UploadFile,
+    allowed_types: List[str],
+    max_size: Optional[int] = None,
+) -> Tuple[str, int]:
+    """
+    Validate an uploaded file using streaming — never loads the full body into
+    memory. Suitable for large uploads (video, SCORM, archives).
+
+    Returns ``(mime_type, content_length)`` with the file position reset to 0
+    so the caller can stream-read the body and pass it to
+    ``StorageBackend.write_stream()``.
+
+    Raises ``HTTPException`` on validation failure.
+    """
+    if not file or not file.filename:
+        raise HTTPException(status_code=400, detail="No file provided")
+
+    _validate_extension(file)
+    config = _resolve_config(file, allowed_types)
+
+    # Read header for magic-byte validation
+    header = file.file.read(_MAGIC_READ_SIZE)
+    if not header:
+        raise HTTPException(status_code=415, detail="Empty file")
+
+    # Seek to end to get content length without loading into memory
+    file.file.seek(0, 2)  # SEEK_END
+    content_length = file.file.tell()
+
+    size_limit = max_size or config.get("max_size")
+    if size_limit and content_length > size_limit:
+        raise HTTPException(
+            status_code=413,
+            detail=f"File too large ({content_length/1024/1024:.1f}MB > {size_limit/1024/1024:.1f}MB)",
+        )
+
+    # Reset to start for caller streaming
+    file.file.seek(0)
+
+    # Validate magic bytes from header (read again at position 0)
+    header_check = file.file.read(_MAGIC_READ_SIZE)
+    if not config["validator"](header_check):
+        raise HTTPException(status_code=415, detail="File appears to be corrupted or invalid")
+    file.file.seek(0)
+
+    canonical_type = EXT_TO_CANONICAL_MIME.get(
+        "." + file.filename.split(".")[-1].lower(),
+        file.content_type,
+    )
+    return canonical_type, content_length
+
+
+def _validate_extension(file: UploadFile) -> None:
+    """Reject dangerous file extensions (SVG) before any processing."""
+    ext = "." + file.filename.split(".")[-1].lower()
+    if ext == ".svg":
+        raise HTTPException(
+            status_code=415,
+            detail="SVG files are not allowed for security reasons",
+        )
+
+
+def _resolve_config(file: UploadFile, allowed_types: List[str]) -> dict:
+    """Return the matching FILE_TYPES entry or raise 415."""
+    ext = "." + file.filename.split(".")[-1].lower()
+    for file_type in allowed_types:
+        if file_type in FILE_TYPES and ext in FILE_TYPES[file_type]["extensions"]:
+            return FILE_TYPES[file_type]
+    allowed_exts = [
+        e
+        for t in allowed_types
+        for e in FILE_TYPES.get(t, {}).get("extensions", [])
+    ]
+    raise HTTPException(
+        status_code=415,
+        detail=f"File type not allowed. Allowed: {allowed_exts}",
+    )
 
 
 def get_safe_filename(
