@@ -47,8 +47,7 @@ const nextConfig = {
   },
   experimental: {
     optimizePackageImports: [
-      '@phosphor-icons/react',
-      'framer-motion',
+      'motion',
       'lucide-react',
       '@emoji-mart/react',
       '@emoji-mart/data',
