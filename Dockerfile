@@ -22,7 +22,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Remove .env files to avoid leaking secrets into the build
 RUN rm -f .env*
 
-RUN corepack enable && ./node_modules/.bin/next build --no-turbopack
+ENV SENTRY_ORG="" SENTRY_PROJECT="" NEXT_PUBLIC_SENTRY_DSN=""
+RUN corepack enable && ./node_modules/.bin/next build
 
 # ───────────────────────────────────────────────
 # Stage 3: Frontend production image

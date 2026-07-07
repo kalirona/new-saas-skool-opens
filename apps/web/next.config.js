@@ -109,19 +109,27 @@ if (process.env.NODE_ENV === 'development') {
   )
 }
 
-// Always wrap with Sentry — DSN is resolved at runtime, not build time
-module.exports = withSentryConfig(nextConfig, {
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-  silent: true,
-  disableLogger: true,
-  tunnelRoute: "/monitoring",
-  sourcemaps: {
-    disable: !process.env.SENTRY_ORG || !process.env.SENTRY_PROJECT,
-  },
-  bundleSizeOptimizations: {
-    excludeDebugStatements: true,
-    excludeReplayIframe: true,
-    excludeReplayShadowDom: true,
-  },
-});
+// Only wrap with Sentry when org/project/DSN are configured (e.g. production)
+// Without env vars, skip Sentry entirely to avoid Turbopack webpack plugin hang
+const shouldUseSentry =
+  process.env.SENTRY_ORG &&
+  process.env.SENTRY_PROJECT &&
+  process.env.NEXT_PUBLIC_SENTRY_DSN
+
+module.exports = shouldUseSentry
+  ? withSentryConfig(nextConfig, {
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      silent: true,
+      disableLogger: true,
+      tunnelRoute: "/monitoring",
+      sourcemaps: {
+        disable: !process.env.SENTRY_ORG || !process.env.SENTRY_PROJECT,
+      },
+      bundleSizeOptimizations: {
+        excludeDebugStatements: true,
+        excludeReplayIframe: true,
+        excludeReplayShadowDom: true,
+      },
+    })
+  : nextConfig
