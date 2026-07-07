@@ -1,6 +1,6 @@
 'use client'
 import { getUriWithoutOrg } from '@services/config/config'
-import { AlertTriangle, HomeIcon, RefreshCcw } from 'lucide-react'
+import { AlertTriangle, Home, RefreshCcw } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React from 'react'
@@ -34,7 +34,7 @@ function ErrorUI(params: { message?: string, submessage?: string }) {
           href={getUriWithoutOrg('/home')}
           className="flex space-x-2 items-center rounded-full px-4 py-1 text-gray-200 bg-gray-700 hover:bg-gray-800 transition-all ease-linear shadow-lg "
         >
-          <HomeIcon className="text-gray-200" size={18} />
+          <Home className="text-gray-200" size={18} />
           <span className="text-md font-bold">Home</span>
         </Link>
       </div>

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useLHSession } from '@components/Contexts/LHSessionContext'
 import { getUriWithOrg } from '@services/config/config'
 import { getOffersByResource } from '@services/payments/offers'
-import { UserPen, ClockIcon, ArrowRight, BookOpen, UserPlus } from 'lucide-react'
+import { UserPen, Clock, ArrowRight, BookOpen, UserPlus } from 'lucide-react'
 import { OfferCard } from './OfferCard'
 import { applyForContributor } from '@services/courses/courses'
 import toast from 'react-hot-toast'
@@ -218,7 +218,7 @@ function CoursesActions({ courseuuid, orgslug, course, trailData }: CourseAction
     if (contributorStatus === 'PENDING') {
       return (
         <div className="w-full bg-amber-50 text-amber-700 border border-amber-200 py-3 rounded-lg nice-shadow font-semibold flex items-center justify-center gap-2 mt-3">
-          <ClockIcon className="w-5 h-5" />
+          <Clock className="w-5 h-5" />
           {t('courses.contributor_application_pending')}
         </div>
       );

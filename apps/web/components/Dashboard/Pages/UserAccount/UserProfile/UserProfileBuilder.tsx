@@ -1,6 +1,6 @@
 import React from 'react'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
-import { Plus, Trash2, GripVertical, ImageIcon, Link as LinkIcon, Award, Edit, TextIcon, Briefcase, GraduationCap, MapPin, BookOpen } from 'lucide-react'
+import { Plus, Trash2, GripVertical, Image as ImageIcon, Link as LinkIcon, Award, Edit, Text, Briefcase, GraduationCap, MapPin, BookOpen } from 'lucide-react'
 import { Input } from "@components/ui/input"
 import { Textarea } from "@components/ui/textarea"
 import { Label } from "@components/ui/label"
@@ -21,7 +21,7 @@ const SECTION_TYPES = {
     descriptionKey: 'user.settings.profile_builder.section_types.image_gallery.description'
   },
   'text': {
-    icon: TextIcon,
+    icon: Text,
     labelKey: 'user.settings.profile_builder.section_types.text.label',
     descriptionKey: 'user.settings.profile_builder.section_types.text.description'
   },
@@ -658,7 +658,7 @@ const TextEditor: React.FC<{
   return (
     <div className="space-y-6 p-6 bg-white rounded-lg nice-shadow">
       <div className="flex items-center space-x-2">
-        <TextIcon className="w-5 h-5 text-gray-500" />
+        <Text className="w-5 h-5 text-gray-500" />
         <h3 className="font-medium text-lg">{t('user.settings.profile_builder.editors.text.title')}</h3>
       </div>
       

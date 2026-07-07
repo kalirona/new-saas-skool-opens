@@ -1,7 +1,7 @@
 'use client'
 import React from 'react'
 import { LandingObject, LandingSection, LandingHeroSection, LandingTextAndImageSection, LandingLogos, LandingPeople, LandingBackground, LandingButton, LandingImage, LandingFeaturedCourses } from './landing_types'
-import { Plus, Trash2, GripVertical, LayoutTemplate, ImageIcon, Users, Award, Edit, Link, Upload, Save, BookOpen, TextIcon } from 'lucide-react'
+import { Plus, Trash2, GripVertical, LayoutTemplate, Image as ImageIcon, Users, Award, Edit, Link, Upload, Save, BookOpen, Text } from 'lucide-react'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import { Input } from "@components/ui/input"
 import { Textarea } from "@components/ui/textarea"
@@ -527,7 +527,7 @@ const HeroSectionEditor: React.FC<{
         <Tabs defaultValue="content" className="w-full">
           <TabsList className="grid w-full grid-cols-4 p-1 bg-gray-100 rounded-lg">
             <TabsTrigger value="content" className="flex items-center space-x-2">
-              <TextIcon className="h-4 w-4" />
+              <Text className="h-4 w-4" />
               <span>{t('dashboard.organization.landing.hero_editor.tabs.content')}</span>
             </TabsTrigger>
             <TabsTrigger value="background" className="flex items-center space-x-2">

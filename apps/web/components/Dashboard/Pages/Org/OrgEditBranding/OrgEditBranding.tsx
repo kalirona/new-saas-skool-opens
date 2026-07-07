@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from 'react'
-import { UploadCloud, Info, Plus, X, GripVertical, Images, StarIcon, ImageIcon, Share2, Link as LinkIcon, Palette, LogIn } from 'lucide-react'
+import { UploadCloud, Info, Plus, X, GripVertical, Images, Star, Image as ImageIcon, Share2, Link as LinkIcon, Palette, LogIn } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useOrg } from '@components/Contexts/OrgContext'
 import { useLHSession } from '@components/Contexts/LHSessionContext'
@@ -477,7 +477,7 @@ export default function OrgEditBranding() {
             value="logo"
             className="flex-1 min-w-fit data-[state=active]:bg-white data-[state=active]:shadow-xs transition-all flex items-center justify-center space-x-2 px-3"
           >
-            <StarIcon size={14} />
+            <Star size={14} />
             <span className="hidden sm:inline">{t('dashboard.organization.images.tabs.logo')}</span>
           </TabsTrigger>
           <TabsTrigger

@@ -31,9 +31,9 @@ function mediaIcon(resource: any) {
   const f = (resource?.file_format || '').toLowerCase()
   if (f === 'pdf') return FileText
   if (['mp4', 'webm', 'mov'].includes(f)) return Video
-  if (['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(f)) return ImageIcon
+  if (['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(f)) return Image
   if (['mp3', 'wav', 'ogg', 'm4a'].includes(f)) return Music
-  return FileIcon
+  return File
 }
 
 function typeIcon(type: string, resource: any) {

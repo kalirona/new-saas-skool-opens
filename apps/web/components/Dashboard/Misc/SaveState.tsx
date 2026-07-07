@@ -9,7 +9,7 @@ import {
 } from '@components/Contexts/CourseContext'
 import { useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query/keys'
-import { Check, SaveAllIcon, Timer, Loader2, AlertCircle } from 'lucide-react'
+import { Check, SaveAll, Timer, Loader2, AlertCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import React, { useCallback, useEffect, useRef } from 'react'
 import { updateCourse } from '@services/courses/courses'
@@ -257,7 +257,7 @@ function SaveState(props: { orgslug: string }) {
       ) : saveError ? (
         <AlertCircle className="w-4 h-4" />
       ) : (
-        <SaveAllIcon className="w-4 h-4" />
+        <SaveAll className="w-4 h-4" />
       )}
       <span>
         {isSaving

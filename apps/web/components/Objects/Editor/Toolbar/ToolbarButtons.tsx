@@ -313,7 +313,7 @@ export const ToolbarButtons = React.memo(({ editor, props }: any) => {
           }
           aria-label={t('editor.blocks.image')}
         >
-          <ImageIcon size={14} />
+          <Image size={14} />
         </div>
       </ToolTip>
       <ToolTip content={t('editor.blocks.video')}>

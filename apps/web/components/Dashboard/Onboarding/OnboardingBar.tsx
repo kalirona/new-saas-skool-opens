@@ -580,7 +580,7 @@ export default function OnboardingBar() {
                                             </span>
                                           </div>
                                           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white nice-shadow">
-                                            <ImageIcon size={16} className="text-violet-400 shrink-0" />
+                                            <Image size={16} className="text-violet-400 shrink-0" />
                                             <span className="text-[11px] font-medium text-gray-600">
                                               {t('onboarding.steps.experience_editor.images_media')}
                                             </span>

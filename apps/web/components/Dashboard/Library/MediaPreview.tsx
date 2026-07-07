@@ -33,9 +33,9 @@ function tileIcon(resource: any): React.ComponentType<any> {
   const f = (resource?.file_format || '').toLowerCase()
   if (f === 'pdf') return FileText
   if (VIDEO_FORMATS.includes(f)) return Video
-  if (IMAGE_FORMATS.includes(f)) return ImageIcon
+  if (IMAGE_FORMATS.includes(f)) return Image
   if (AUDIO_FORMATS.includes(f)) return Music
-  return FileIcon
+  return File
 }
 
 function IconTile({ Icon }: { Icon: React.ComponentType<any> }) {

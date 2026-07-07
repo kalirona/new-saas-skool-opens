@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from 'react'
-import { UploadCloud, Info, Plus, X, GripVertical, Images, StarIcon, ImageIcon } from 'lucide-react'
+import { UploadCloud, Info, Plus, X, GripVertical, Images, Star, Image as ImageIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useOrg } from '@components/Contexts/OrgContext'
 import { useLHSession } from '@components/Contexts/LHSessionContext'
@@ -386,7 +386,7 @@ export default function OrgEditImages() {
             value="logo" 
             className="data-[state=active]:bg-white data-[state=active]:shadow-xs transition-all flex items-center space-x-2"
           >
-            <StarIcon size={16} />
+            <Star size={16} />
             <span>{t('dashboard.organization.images.tabs.logo')}</span>
           </TabsTrigger>
           <TabsTrigger 
