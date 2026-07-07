@@ -1,5 +1,5 @@
 'use client'
-import { PlayCircle, Upload, Youtube } from 'lucide-react'
+import { PlayCircle, Upload, Video } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import BarLoader from 'react-spinners/BarLoader'
 
@@ -150,7 +150,7 @@ function EditVideoActivityModal({ activity, courseUuid, orgSlug, onClose }: Edit
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-gray-700">YouTube URL</label>
             <div className="flex items-center gap-2 text-xs text-gray-400 mb-1">
-              <Youtube size={14} />
+              <Video size={14} />
               <span>Update the YouTube link below</span>
             </div>
             <input

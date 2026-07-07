@@ -1,6 +1,6 @@
 'use client'
 
-import { MousePointer, Hand, Pencil, Square, Youtube, Sparkle, BookOpen, Code, Globe, Smile, StickyNote, RotateCcw, RotateCw, CheckSquare, Headphones, SeparatorVertical, Maximize } from 'lucide-react'
+import { MousePointer, Hand, Pencil,     Square, Video, Sparkle, BookOpen, Code, Globe, Smile, StickyNote, RotateCcw, RotateCw, CheckSquare, Headphones, SeparatorVertical, Maximize } from 'lucide-react'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Link from 'next/link'
@@ -43,7 +43,7 @@ const tools = [
   { mode: 'note' as const, icon: StickyNote, label: 'boards.toolbar.note', colorClass: 'editor-tool-btn-warning' },
   { mode: 'todo' as const, icon: CheckSquare, label: 'boards.toolbar.todo', colorClass: 'editor-tool-btn-info' },
   { mode: 'sticker' as const, icon: Smile, label: 'boards.toolbar.sticker', colorClass: 'editor-tool-btn-warning' },
-  { mode: 'youtube' as const, icon: Youtube, label: 'boards.toolbar.youtube', colorClass: 'editor-tool-btn-interactive' },
+  { mode: 'youtube' as const, icon: Video, label: 'boards.toolbar.youtube', colorClass: 'editor-tool-btn-interactive' },
   { mode: 'playground' as const, icon: Sparkle, label: 'boards.toolbar.ai_playground', colorClass: 'editor-tool-btn-tip' },
   { mode: 'activity' as const, icon: BookOpen, label: 'boards.toolbar.activity', colorClass: 'editor-tool-btn-info' },
   { mode: 'embed' as const, icon: Code, label: 'boards.toolbar.embed', colorClass: 'editor-tool-btn-interactive' },

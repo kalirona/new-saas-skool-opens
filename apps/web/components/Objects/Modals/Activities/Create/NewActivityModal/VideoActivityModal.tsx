@@ -1,4 +1,4 @@
-import { PlayCircle, Upload, Youtube } from 'lucide-react'
+import { PlayCircle, Upload, Video } from 'lucide-react'
 import React, { useState } from 'react'
 import * as Form from '@radix-ui/react-form'
 import BarLoader from 'react-spinners/BarLoader'
@@ -153,7 +153,7 @@ function VideoModal({
                   : 'bg-white text-gray-500 hover:bg-gray-50'
               }`}
             >
-              <Youtube size={16} />
+              <Video size={16} />
               YouTube
             </button>
           </div>

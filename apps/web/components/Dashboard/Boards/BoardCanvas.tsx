@@ -1,6 +1,6 @@
 'use client'
 
-import { MessageCircle, Square, Youtube, Sparkle, BookOpen, Code, Globe, Smile, StickyNote, CheckSquare, Headphones, Pencil, Maximize } from 'lucide-react'
+import { MessageCircle,     Square, Video, Sparkle, BookOpen, Code, Globe, Smile, StickyNote, CheckSquare, Headphones, Pencil, Maximize } from 'lucide-react'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { FeedbackModal } from '@components/Objects/Modals/FeedbackModal'
@@ -115,7 +115,7 @@ function BoardEditorInner({
   const placementTools: Partial<Record<typeof toolMode, { icon: React.ComponentType<any>; label: string }>> = {
     draw: { icon: Pencil, label: 'Draw' },
     card: { icon: Square, label: 'Card' },
-    youtube: { icon: Youtube, label: 'YouTube' },
+    youtube: { icon: Video, label: 'YouTube' },
     playground: { icon: Sparkle, label: 'AI Playground' },
     activity: { icon: BookOpen, label: 'Activity' },
     embed: { icon: Code, label: 'Embed' },
