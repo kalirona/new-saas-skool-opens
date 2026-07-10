@@ -9,7 +9,7 @@
  * Personal but we upsell Free users to Standard).
  */
 
-import { BookOpen, Presentation, BarChart3, ChartLine, MessageCircle, Box, CreditCard, Folder, Globe, Key, Zap, ListChecks, Mic, Bot, ShieldCheck, Users, ScrollText, GitForkHorizontal } from 'lucide-react'
+import { BookOpen, Presentation, BarChart3, ChartLine, MessageCircle, Box, CreditCard, Folder, Globe, Key, Zap, ListChecks, Mic, Bot, ShieldCheck, Users, ScrollText, GitFork } from 'lucide-react'
 import type { LucideProps } from 'lucide-react'
 import type { ComponentType } from 'react'
 
@@ -182,7 +182,7 @@ export const FEATURE_METADATA: Record<FeatureKey, FeatureMeta> = {
   trail: {
     titleKey: 'common.features.disabled.names.trail',
     descriptionKey: 'common.features.disabled.public.description',
-    Icon: GitForkHorizontal,
+    Icon: GitFork,
     upsellPlan: 'free',
   },
 }

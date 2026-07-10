@@ -70,9 +70,10 @@ function Activity(props: any) {
         <div
           className="flex flex-row py-2 my-2 rounded-md bg-gray-50 text-gray-500 hover:bg-gray-100 hover:scale-102 hover:shadow-sm space-x-1 w-auto items-center ring-1 ring-inset ring-gray-400/10 shadow-xs transition-all delay-100 duration-75 ease-linear"
           key={props.activity.id}
+          ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          ref={provided.innerRef}
+          style={{ ...provided.draggableProps.style } as React.CSSProperties}
         >
           <div className="px-3 text-gray-300 space-x-1 w-28">
             {props.activity.type === 'video' && (

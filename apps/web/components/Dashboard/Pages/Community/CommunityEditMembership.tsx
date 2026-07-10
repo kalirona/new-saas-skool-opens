@@ -50,7 +50,7 @@ export function CommunityEditMembership() {
     setSaving(true)
     try {
       await updateCommunity(community.community_uuid, { community_type: selectedType, locked }, accessToken)
-      communityDispatch({ type: 'setCommunity', payload: { ...community, community_type: selectedType, locked } })
+      communityDispatch?.({ type: 'setCommunity', payload: { ...community, community_type: selectedType, locked } })
       toast.success(t('dashboard.courses.communities.settings.membership.toasts.saved') || 'Community type updated')
     } catch (err: any) {
       toast.error(err.message || t('dashboard.courses.communities.settings.membership.toasts.error') || 'Failed to update')

@@ -89,7 +89,6 @@ function ScormActivity({ activity, course }: ScormActivityProps) {
     // Cleanup on unmount only
     return () => {
       if (runtimeRef.current) {
-        console.log('[SCORM] Cleaning up runtime on unmount')
         runtimeRef.current.terminate()
         runtimeRef.current = null
       }

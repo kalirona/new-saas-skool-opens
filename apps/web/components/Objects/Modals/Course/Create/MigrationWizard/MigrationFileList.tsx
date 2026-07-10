@@ -54,6 +54,7 @@ export default function MigrationFileList({
                     ref={provided.innerRef}
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
+                    style={{ ...provided.draggableProps.style } as React.CSSProperties}
                     className={`flex items-center space-x-2 px-2 py-1.5 rounded-md text-sm ${
                       snapshot.isDragging
                         ? 'bg-blue-50 shadow-md'

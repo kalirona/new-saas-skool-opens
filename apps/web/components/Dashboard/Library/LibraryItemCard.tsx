@@ -43,7 +43,7 @@ function typeIcon(type: string, resource: any) {
     case 'communities': return MessageCircle
     case 'boards': return LayoutGrid
     case 'playgrounds': return Box
-    default: return FileIcon
+    default: return File
   }
 }
 

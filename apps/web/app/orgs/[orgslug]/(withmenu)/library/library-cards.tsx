@@ -1,6 +1,6 @@
 'use client'
 
-import { Folder, GraduationCap, MessageCircle, LayoutGrid, Box, Link, FileText, Video, Image, Music, File, ExternalLink, Mic } from 'lucide-react'
+import { Folder, GraduationCap, MessageCircle, LayoutGrid, Box, Link as LucideLink, FileText, Video, Image, Music, File, ExternalLink, Mic } from 'lucide-react'
 import type { LucideProps } from 'lucide-react'
 import React from 'react'
 import Link from 'next/link'
@@ -27,13 +27,13 @@ const TYPE_TONE: Record<string, string> = {
 }
 
 function mediaIcon(resource: any): React.ComponentType<LucideProps> {
-  if (resource?.media_type === 'EMBED') return Link
+  if (resource?.media_type === 'EMBED') return LucideLink
   const f = (resource?.file_format || '').toLowerCase()
   if (f === 'pdf') return FileText
   if (['mp4', 'webm', 'mov'].includes(f)) return Video
-  if (['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(f)) return ImageIcon
+  if (['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(f)) return Image
   if (['mp3', 'wav', 'ogg', 'm4a'].includes(f)) return Music
-  return FileIcon
+return File
 }
 
 function typeIcon(type: string, resource: any): React.ComponentType<LucideProps> {
@@ -44,7 +44,7 @@ function typeIcon(type: string, resource: any): React.ComponentType<LucideProps>
     case 'communities': return MessageCircle
     case 'boards': return LayoutGrid
     case 'playgrounds': return Box
-    default: return FileIcon
+    default: return File
   }
 }
 
@@ -69,7 +69,7 @@ export function FolderCard({ folder, orgslug }: { folder: any; orgslug: string }
         title={t('library.share')}
         className="absolute top-2 right-2 z-10 p-1 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity"
       >
-        <Link size={16} />
+        <LucideLink size={16} />
       </button>
       <div className="flex items-center gap-3 pr-6">
         {thumb ? (

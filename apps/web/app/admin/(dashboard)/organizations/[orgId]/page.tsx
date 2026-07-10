@@ -189,7 +189,7 @@ export default function OrgDetailPage() {
                   : 'text-white/40 border-transparent hover:text-white/60 hover:border-white/20'
               }`}
             >
-              <Icon size={16} weight={activeTab === tab.id ? 'fill' : 'regular'} />
+              <Icon size={16} />
               {tab.label}
             </button>
           )

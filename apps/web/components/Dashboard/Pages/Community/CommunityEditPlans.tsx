@@ -164,6 +164,7 @@ const CommunityEditPlans: React.FC = () => {
                         <div
                           ref={provided.innerRef}
                           {...provided.draggableProps}
+                          style={{ ...provided.draggableProps.style } as React.CSSProperties}
                           className={`flex items-center gap-3 px-4 py-3 bg-white border border-gray-100 rounded-lg text-sm ${snapshot.isDragging ? 'shadow-lg opacity-50' : ''}`}
                         >
                           <button {...provided.dragHandleProps} className="cursor-grab text-gray-400 hover:text-gray-600" aria-label="Reorder">

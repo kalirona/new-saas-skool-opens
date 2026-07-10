@@ -20,7 +20,7 @@ import { normalizeForSearch } from '@/lib/search/normalize'
 
 const CONTENT_TYPE_ICON: Record<ContentResultType, SearchMeta['icon']> = {
   course: BookOpen,
-  user: UserIcon,
+  user: User,
   community: MessageCircle,
   discussion: MessageCircle,
   playground: Box,
@@ -254,17 +254,17 @@ export default function CommandPalette() {
                   : t('dashboard.search.no_results')}
               </Command.Empty>
 
-              <Command.Users heading={t('dashboard.search.groups.pages')}>
+              <Command.Group heading={t('dashboard.search.groups.pages')}>
                 {pages.map(renderPageItem)}
-              </Command.Users>
+              </Command.Group>
 
               {CONTENT_TYPE_ORDER.map((type) => {
                 const items = grouped[type]
                 if (items.length === 0) return null
                 return (
-                  <Command.Users key={type} heading={t(CONTENT_TYPE_GROUP_KEY[type])}>
+                  <Command.Group key={type} heading={t(CONTENT_TYPE_GROUP_KEY[type])}>
                     {items.map(renderContentItem)}
-                  </Command.Users>
+                  </Command.Group>
                 )
               })}
             </Command.List>

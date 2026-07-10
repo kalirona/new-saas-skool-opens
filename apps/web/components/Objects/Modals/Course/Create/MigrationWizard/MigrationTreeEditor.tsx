@@ -296,6 +296,7 @@ export default function MigrationTreeEditor({
                       <div
                         ref={provided.innerRef}
                         {...provided.draggableProps}
+                        style={{ ...provided.draggableProps.style } as React.CSSProperties}
                         className={`border rounded-lg ${
                           snapshot.isDragging ? 'shadow-lg' : ''
                         }`}
@@ -367,6 +368,7 @@ export default function MigrationTreeEditor({
                                           <div
                                             ref={provided.innerRef}
                                             {...provided.draggableProps}
+                                            style={{ ...provided.draggableProps.style } as React.CSSProperties}
                                             className={`border rounded-md p-2 ${
                                               snapshot.isDragging
                                                 ? 'shadow-md bg-blue-50'

@@ -47,7 +47,7 @@ export const searchMetas: SearchMeta[] = [
     titleKey: 'dashboard.search.entries.payments_customers.title',
     descriptionKey: 'dashboard.search.entries.payments_customers.description',
     keywordsKey: 'dashboard.search.entries.payments_customers.keywords',
-    icon: UserIcon,
+    icon: User,
     href: '/dash/payments/customers',
     group: 'payments',
     featureKey: 'payments',

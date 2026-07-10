@@ -536,6 +536,7 @@ export default function OrgEditImages() {
                               <div
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
+                                style={{ ...provided.draggableProps.style } as React.CSSProperties}
                                 className={cn(
                                   "relative group shrink-0",
                                   "w-48",

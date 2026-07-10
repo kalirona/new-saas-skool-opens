@@ -24,7 +24,7 @@ function QuizBlockComponent(props: any) {
   const { t } = useTranslation()
   const [questions, setQuestions] = React.useState(
     props.node.attrs.questions
-  ) as [HelpCircle[], any]
+  ) as [Question[], any]
   const [userAnswers, setUserAnswers] = React.useState([]) as [any[], any]
   const [submitted, setSubmitted] = React.useState(false) as [boolean, any]
   const [submissionMessage, setSubmissionMessage] = React.useState('') as [
@@ -57,7 +57,7 @@ function QuizBlockComponent(props: any) {
   const handleUserSubmission = () => {
     setSubmitted(true);
 
-    const correctAnswers = questions.every((question: HelpCircle) => {
+    const correctAnswers = questions.every((question: Question) => {
       const correctAnswers = question.answers.filter((answer: Answer) => answer.correct);
       const userAnswersForQuestion = userAnswers.filter(
         (userAnswer: any) => userAnswer.question_id === question.question_id
@@ -119,13 +119,13 @@ function QuizBlockComponent(props: any) {
     }
 
     const question: any = questions.find(
-      (question: HelpCircle) => question.question_id === question_id
+      (question: Question) => question.question_id === question_id
     )
     if (question.answers.length >= 5) {
       return
     }
 
-    const newQuestions = questions.map((question: HelpCircle) => {
+    const newQuestions = questions.map((question: Question) => {
       if (question.question_id === question_id) {
         question.answers.push(newAnswer)
       }
@@ -140,7 +140,7 @@ function QuizBlockComponent(props: any) {
     answer_id: string,
     value: string
   ) => {
-    const newQuestions = questions.map((question: HelpCircle) => {
+    const newQuestions = questions.map((question: Question) => {
       if (question.question_id === question_id) {
         question.answers.map((answer: Answer) => {
           if (answer.answer_id === answer_id) {
@@ -155,7 +155,7 @@ function QuizBlockComponent(props: any) {
   }
 
   const changeQuestionValue = (question_id: string, value: string) => {
-    const newQuestions = questions.map((question: HelpCircle) => {
+    const newQuestions = questions.map((question: Question) => {
       if (question.question_id === question_id) {
         question.question = value
       }
@@ -166,13 +166,13 @@ function QuizBlockComponent(props: any) {
 
   const deleteQuestion = (question_id: string) => {
     const newQuestions = questions.filter(
-      (question: HelpCircle) => question.question_id !== question_id
+      (question: Question) => question.question_id !== question_id
     )
     saveQuestions(newQuestions)
   }
 
   const deleteAnswer = (question_id: string, answer_id: string) => {
-    const newQuestions = questions.map((question: HelpCircle) => {
+    const newQuestions = questions.map((question: Question) => {
       if (question.question_id === question_id) {
         question.answers = question.answers.filter(
           (answer: Answer) => answer.answer_id !== answer_id
@@ -184,7 +184,7 @@ function QuizBlockComponent(props: any) {
   }
 
   const markAnswerCorrect = (question_id: string, answer_id: string) => {
-    const newQuestions = questions.map((question: HelpCircle) => {
+    const newQuestions = questions.map((question: Question) => {
       if (question.question_id === question_id) {
         question.answers = question.answers.map((answer: Answer) => ({
           ...answer,
@@ -260,9 +260,9 @@ function QuizBlockComponent(props: any) {
 
         {/* Questions section */}
         <div className="space-y-4">
-          {questions.map((question: HelpCircle) => (
+          {questions.map((question: Question) => (
             <div key={question.question_id} className="bg-white rounded-lg p-4 nice-shadow">
-              {/* HelpCircle */}
+              {/* Question */}
               <div className="flex items-start gap-2 mb-3">
                 <div className="flex-1">
                   {isEditable ? (

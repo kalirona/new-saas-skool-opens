@@ -376,8 +376,6 @@ function CreateEpisodeModal({
     e.preventDefault()
     if (!title.trim()) return
 
-    console.log('Creating episode:', { podcastuuid, title, description, accessToken: !!accessToken })
-
     setIsSubmitting(true)
     const toastId = toast.loading(t('podcasts.dashboard.episodes.creating'))
     try {
@@ -388,8 +386,6 @@ function CreateEpisodeModal({
         null,
         accessToken
       )
-
-      console.log('Create episode response:', res)
 
       if (!res.success) {
         const errorMessage = typeof res.data?.detail === 'string'

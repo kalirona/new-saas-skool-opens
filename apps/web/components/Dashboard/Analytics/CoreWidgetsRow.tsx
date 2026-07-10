@@ -481,7 +481,7 @@ function CourseRow({ row, org }: { row: any; org: any }) {
             {row.views}
           </span>
           <span className="flex items-center gap-0.5">
-            <UsersIcon size={12} />
+            <Users size={12} />
             {row.enrollments}
           </span>
           <span className="flex items-center gap-0.5">

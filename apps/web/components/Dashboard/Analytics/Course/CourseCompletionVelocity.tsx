@@ -30,7 +30,7 @@ export default function CourseCompletionVelocity({
 
   return (
     <CourseWidgetCard
-      icon={<WidgetIcon icon={Zap} bg="bg-amber-50" color="text-amber-500" weight="fill" />}
+      icon={<WidgetIcon icon={Zap} bg="bg-amber-50" color="text-amber-500" />}
       title={t('analytics.course_analytics.completion_velocity.title')}
       subtitle={t('analytics.course_analytics.completion_velocity.subtitle')}
       modalContent={

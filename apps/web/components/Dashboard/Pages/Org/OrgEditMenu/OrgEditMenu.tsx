@@ -1,5 +1,5 @@
 'use client'
-import { Books, Folder, Headphones, MessageCircle, Box, ShoppingBag, GripVertical, Lock, Trash, Plus, Save, ChevronDown } from 'lucide-react'
+import { Book, Folder, Headphones, MessageCircle, Box, ShoppingBag, GripVertical, Lock, Trash, Plus, Save, ChevronDown } from 'lucide-react'
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useOrg } from '@components/Contexts/OrgContext'
@@ -22,7 +22,7 @@ import { MENU_ICONS, MENU_ICON_NAMES, menuIcon, DEFAULT_MENU_ICON } from '@compo
 type BuiltinMeta = { feature: string; link: string; labelKey: string; Icon: any }
 
 const BUILTIN_META: Record<string, BuiltinMeta> = {
-  courses: { feature: 'courses', link: '/courses', labelKey: 'courses.courses', Icon: Books },
+  courses: { feature: 'courses', link: '/courses', labelKey: 'courses.courses', Icon: Book },
   library: { feature: 'folders', link: '/library', labelKey: 'library.library', Icon: Folder },
   podcasts: { feature: 'podcasts', link: '/podcasts', labelKey: 'podcasts.podcasts', Icon: Headphones },
   communities: { feature: 'communities', link: '/communities', labelKey: 'communities.title', Icon: MessageCircle },
@@ -111,7 +111,7 @@ function IconPicker({
         className={`relative p-2 bg-white rounded-lg nice-shadow hover:bg-gray-50 transition-colors disabled:opacity-50 ${open ? 'ring-2 ring-black/10' : ''}`}
       >
         {/* eslint-disable-next-line react-hooks/static-components */}
-        <Current size={18} weight="fill" className="text-gray-600" />
+        <Current size={18} className="text-gray-600" />
         <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-black flex items-center justify-center ring-2 ring-white">
           <ChevronDown size={12} className="text-white" />
         </span>
@@ -315,6 +315,7 @@ const OrgEditMenu: React.FC = () => {
                         <div
                           ref={prov.innerRef}
                           {...prov.draggableProps}
+                          style={{ ...prov.draggableProps.style } as React.CSSProperties}
                           className={`flex items-center gap-3 bg-gray-50/60 rounded-lg p-3 nice-shadow ${snap.isDragging ? 'bg-white shadow-lg' : ''} ${grayed ? 'opacity-60 grayscale' : ''}`}
                         >
                           <button {...prov.dragHandleProps} className="text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing" aria-label="Reorder">

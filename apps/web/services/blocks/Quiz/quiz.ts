@@ -7,6 +7,6 @@ export async function submitQuizBlock(activity_id: string, data: any,access_toke
     RequestBodyWithAuthHeader('POST', data, null,access_token)
   )
     .then((result) => result.json())
-    .catch((error) => console.log('error', error))
+    .catch((error) => console.error('Error submitting quiz:', error))
   return result
 }

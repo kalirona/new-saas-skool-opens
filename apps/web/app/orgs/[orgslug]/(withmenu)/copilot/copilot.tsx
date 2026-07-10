@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronDown, BookOpen, Loader, Sparkle, ArrowRight, ChevronRight, Books, Plus, Trash, MessageCircle, List, X, Star, Pencil, Check, Globe, Send } from 'lucide-react'
+import { ChevronDown, BookOpen, Loader, Sparkle, ArrowRight, ChevronRight, Book, Plus, Trash, MessageCircle, List, X, Star, Pencil, Check, Globe, Send } from 'lucide-react'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useLHSession } from '@components/Contexts/LHSessionContext'
@@ -505,7 +505,7 @@ export function CopilotChat({ orgslug }: CopilotProps) {
                     onClick={() => setCourseDropdownOpen(!courseDropdownOpen)}
                     className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium rounded-xl bg-neutral-50 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 nice-shadow transition-all"
                   >
-                    {selectedCourse ? <Books size={18} className="text-violet-500" /> : <Sparkle size={18} className="text-violet-500" />}
+                    {selectedCourse ? <Book size={18} className="text-violet-500" /> : <Sparkle size={18} className="text-violet-500" />}
                     <span>{selectedCourseName}</span>
                     <ChevronDown size={14} className={`text-neutral-400 transition-transform ${courseDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
@@ -602,7 +602,7 @@ export function CopilotChat({ orgslug }: CopilotProps) {
                 onClick={() => setCourseDropdownOpen(!courseDropdownOpen)}
                 className="flex items-center gap-1.5 px-2.5 py-2 text-xs font-medium rounded-lg text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
               >
-                {selectedCourse ? <Books size={14} className="text-violet-500" /> : <Sparkle size={14} className="text-violet-500" />}
+                {selectedCourse ? <Book size={14} className="text-violet-500" /> : <Sparkle size={14} className="text-violet-500" />}
                 <ChevronDown size={12} className={`text-neutral-400 transition-transform ${courseDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               {courseDropdownOpen && <CourseDropdown courses={courses} selectedCourse={selectedCourse} onSelect={(uuid) => { setSelectedCourse(uuid); setCourseDropdownOpen(false) }} position="top" />}
@@ -952,7 +952,7 @@ export function CourseDropdown({ courses, selectedCourse, onSelect, position = '
               : 'text-neutral-700 dark:text-neutral-300'
           }`}
         >
-          <Books size={14} className="text-neutral-400 flex-shrink-0" />
+          <Book size={14} className="text-neutral-400 flex-shrink-0" />
           <span className="truncate">{course.name}</span>
         </button>
       ))}

@@ -1,7 +1,7 @@
 export interface OpsDashboardResponse {
   timestamp: string
   health: {
-    status: 'healthy' | 'degraded' | 'unhealthy'
+    status: string
     timestamp?: string
     dependencies: { name: string; status: string; latency_ms?: number; error?: string }[]
   } | { error: string }

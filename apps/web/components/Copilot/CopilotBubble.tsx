@@ -1,6 +1,6 @@
 'use client'
 
-import { MessageCircle, X, Plus, Loader, BookOpen, Globe, Books, Sparkle, ChevronDown, ArrowRight, List, Send } from 'lucide-react'
+import { MessageCircle, X, Plus, Loader, BookOpen, Globe, Book, Sparkle, ChevronDown, ArrowRight, List, Send } from 'lucide-react'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useOrg } from '@components/Contexts/OrgContext'
 import { useLHSession } from '@components/Contexts/LHSessionContext'
@@ -451,7 +451,7 @@ function BubbleInner({ orgslug, open, onOpenChange, sessionToLoad }: CopilotBubb
                       onClick={() => setCourseDropdownOpen(!courseDropdownOpen)}
                       className="flex items-center gap-0.5 px-1.5 py-1.5 text-xs rounded-lg text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
                     >
-                      {selectedCourse ? <Books size={14} className="text-violet-500" /> : <Sparkle size={14} className="text-violet-500" />}
+                      {selectedCourse ? <Book size={14} className="text-violet-500" /> : <Sparkle size={14} className="text-violet-500" />}
                       <ChevronDown aria-hidden="true" size={12} className={`text-neutral-400 transition-transform ${courseDropdownOpen ? 'rotate-180' : ''}`} />
                     </button>
                     {courseDropdownOpen && (

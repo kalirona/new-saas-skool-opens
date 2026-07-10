@@ -24,7 +24,7 @@ export default function CourseTimeToCompletion({
 
   return (
     <CourseWidgetCard
-      icon={<WidgetIcon icon={Timer} bg="bg-blue-50" color="text-blue-500" weight="fill" />}
+      icon={<WidgetIcon icon={Timer} bg="bg-blue-50" color="text-blue-500" />}
       title={t('analytics.course_analytics.time_to_completion.title')}
       subtitle={t('analytics.course_analytics.time_to_completion.subtitle')}
       modalContent={

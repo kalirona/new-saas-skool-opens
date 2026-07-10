@@ -139,11 +139,11 @@ function CalloutComponent(props: any) {
               className={`${config.iconColor} mt-[3px] hover:opacity-70 transition-opacity cursor-pointer`}
               title="Change callout type"
             >
-              <Icon size={18} weight="fill" />
+              <Icon size={18} />
             </button>
           ) : (
             <span className={`${config.iconColor} mt-[3px] block`}>
-              <Icon size={18} weight="fill" />
+              <Icon size={18} />
             </span>
           )}
 

@@ -138,7 +138,7 @@ function NewTaskModal({ closeModal, assignment_uuid }: any) {
             }}
           >
             <div className={`w-14 h-14 rounded-full bg-white nice-shadow flex items-center justify-center mb-3 ${type.iconColor}`}>
-              <IconComponent size={24} weight="duotone" />
+              <IconComponent size={24} />
             </div>
             <p className={`text-sm font-bold ${type.titleColor}`}>
               {t(type.labelKey)}

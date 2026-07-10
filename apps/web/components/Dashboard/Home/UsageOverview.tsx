@@ -158,7 +158,6 @@ export default function UsageOverview() {
                     <div className="flex items-center gap-2">
                       <Icon
                         size={14}
-                        weight="duotone"
                         className="text-gray-400"
                       />
                       <span className="text-xs font-medium text-gray-600">
@@ -225,7 +224,6 @@ export default function UsageOverview() {
                 />
                 <feature.icon
                   size={14}
-                  weight="duotone"
                   className={
                     feature.enabled ? 'text-gray-500' : 'text-gray-300'
                   }

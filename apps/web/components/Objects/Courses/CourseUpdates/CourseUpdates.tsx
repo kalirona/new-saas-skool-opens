@@ -94,7 +94,7 @@ const UpdatesSection = () => {
         {adminStatus.isAdmin && <div
           onClick={() => setSelectedView('new')}
           className='py-2 px-4 space-x-2 items-center flex cursor-pointer text-xs font-medium hover:bg-gray-200 bg-gray-100 outline outline-1  outline-neutral-200/40'>
-          <PenLine size={14} />
+          <PencilLine size={14} />
           <span>{t('courses.new_update')}</span>
         </div>}
       </div>

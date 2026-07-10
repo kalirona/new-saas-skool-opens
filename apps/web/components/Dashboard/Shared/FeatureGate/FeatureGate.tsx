@@ -113,7 +113,7 @@ function UpgradeCard({
     <GateShell>
       <GateCard gradient={gradient}>
         <IconBubble>
-          <Icon size={32} weight="duotone" className="text-gray-500" />
+          <Icon size={32} className="text-gray-500" />
         </IconBubble>
 
         <p className="text-gray-500 max-w-md mx-auto mb-8 leading-relaxed text-sm">
@@ -166,7 +166,7 @@ function DisabledCard({
     <GateShell>
       <GateCard gradient="from-gray-50/80">
         <IconBubble>
-          <Icon size={32} weight="duotone" className="text-gray-500" />
+          <Icon size={32} className="text-gray-500" />
         </IconBubble>
 
         <h2 className="text-lg font-semibold text-gray-800 mb-2">

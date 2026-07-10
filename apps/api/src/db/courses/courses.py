@@ -46,11 +46,11 @@ class AuthorWithRole(SQLModel):
 
 
 class CourseBase(SQLModel):
-    name: str
-    description: Optional[str] = None
-    about: Optional[str] = None
-    learnings: Optional[str] = None
-    tags: Optional[str] = None
+    name: str = Field(max_length=255)
+    description: Optional[str] = Field(default=None, max_length=5000)
+    about: Optional[str] = Field(default=None, max_length=10000)
+    learnings: Optional[str] = Field(default=None, max_length=5000)
+    tags: Optional[str] = Field(default=None, max_length=1000)
     thumbnail_type: Optional[ThumbnailType] = Field(default=ThumbnailType.IMAGE)
     thumbnail_image: Optional[str] = Field(default="")
     thumbnail_video: Optional[str] = Field(default="")

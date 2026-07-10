@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class UserBase(SQLModel):
-    username: str
+    username: str = Field(index=True)
     first_name: str
     last_name: str
     email: EmailStr
@@ -135,7 +135,7 @@ class User(UserBase, table=True):
     last_login_at: Optional[str] = None
     last_login_ip: Optional[str] = None
     signup_method: Optional[str] = None
-    is_superadmin: bool = Field(default=False)
+    is_superadmin: bool = Field(default=False, index=True)
     password_changed_at: Optional[datetime] = Field(default=None)
     creation_date: str = ""
     update_date: str = ""

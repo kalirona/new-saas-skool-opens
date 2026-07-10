@@ -149,7 +149,6 @@ function NewActivityModal({
                   ) : (
                     <Icon
                       size={32}
-                      weight="duotone"
                       className={activity.color.icon}
                     />
                   )}

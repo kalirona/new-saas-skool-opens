@@ -118,7 +118,7 @@ export default function CourseTopLearners({
 
   return (
     <CourseWidgetCard
-      icon={<WidgetIcon icon={Trophy} bg="bg-amber-50" color="text-amber-500" weight="fill" />}
+      icon={<WidgetIcon icon={Trophy} bg="bg-amber-50" color="text-amber-500" />}
       title={t('analytics.course_analytics.top_learners.title')}
       subtitle={t('analytics.course_analytics.top_learners.subtitle')}
       modalContent={

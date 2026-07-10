@@ -10,7 +10,7 @@ class ActivityVersionBase(SQLModel):
     version_number: int
     created_by_id: Optional[int] = Field(
         default=None,
-        sa_column=Column(Integer, ForeignKey("user.id", ondelete="SET NULL"))
+        sa_column=Column(Integer, ForeignKey("user.id", ondelete="SET NULL"), index=True)
     )
 
 
@@ -21,10 +21,10 @@ class ActivityVersion(ActivityVersionBase, table=True):
     """
     id: Optional[int] = Field(default=None, primary_key=True)
     activity_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("activity.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("activity.id", ondelete="CASCADE"), index=True)
     )
     org_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
     created_at: datetime = Field(
         default_factory=datetime.utcnow,

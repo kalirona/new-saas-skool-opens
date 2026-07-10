@@ -1,4 +1,4 @@
-import { RotateCcw, RotateCw, ChevronDown, CheckCircle, Code, Columns2, Columns3, Box, MousePointerClick, FileText, GitBranch, Globe, Headphones, Image, Info, Lightbulb, Link, List, ListOrdered, Rows2, Rows3, Sigma, Table, Tag, Italic, Strikethrough, User, Video, AlertTriangle, XCircle, SeparatorVertical, Braces, HelpCircle, Bold } from 'lucide-react'
+import { RotateCcw, RotateCw, ChevronDown, CheckCircle, Code, Columns2, Columns3, Box, MousePointerClick, FileText, GitBranch, Globe, Headphones, Image as LucideImage, Info, Lightbulb, Link as LucideLink, List, ListOrdered, Rows2, Rows3, Sigma, Table, Tag, Italic, Strikethrough, User, Video, AlertTriangle, XCircle, SeparatorVertical, Braces, HelpCircle, Bold } from 'lucide-react'
 
 import { SiYoutube } from '@icons-pack/react-simple-icons'
 import ToolTip from '@components/Objects/StyledElements/Tooltip/Tooltip'
@@ -288,7 +288,7 @@ export const ToolbarButtons = React.memo(({ editor, props }: any) => {
             className={`editor-tool-btn editor-tool-btn-link ${editor.isActive('link') ? 'is-active' : ''}`}
             aria-label={t('editor.toolbar.link')}
           >
-            <Link size={14} />
+            <LucideLink size={14} />
           </div>
           {showLinkInput && (
             <LinkInputTooltip
@@ -313,7 +313,7 @@ export const ToolbarButtons = React.memo(({ editor, props }: any) => {
           }
           aria-label={t('editor.blocks.image')}
         >
-          <Image size={14} />
+          <LucideImage size={14} />
         </div>
       </ToolTip>
       <ToolTip content={t('editor.blocks.video')}>

@@ -142,6 +142,7 @@ export function ManageSpacesModal({
                           <div
                             ref={provided.innerRef}
                             {...provided.draggableProps}
+                            style={{ ...provided.draggableProps.style } as React.CSSProperties}
                             className={`flex items-center gap-2 px-3 py-2.5 bg-white border border-gray-200 rounded-lg ${snapshot.isDragging ? 'opacity-50 shadow-lg' : ''}`}
                           >
                             <button {...provided.dragHandleProps} className="cursor-grab text-gray-400 hover:text-gray-600" aria-label="Drag to reorder">

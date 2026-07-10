@@ -531,6 +531,8 @@ async def get_community_members(
     current_user: Union[PublicUser, AnonymousUser, APITokenUser],
     db_session: AsyncSession,
     status: Optional[str] = None,
+    page: int = 1,
+    limit: int = 50,
 ) -> List[CommunityMemberRead]:
     community = (
         await db_session.execute(
@@ -550,7 +552,10 @@ async def get_community_members(
     if status and status in MEMBER_STATUSES:
         statement = statement.where(CommunityMember.status == status)
 
-    members = (await db_session.execute(statement.order_by(CommunityMember.joined_date.desc()))).scalars().all()
+    offset_val = (page - 1) * limit
+    members = (await db_session.execute(
+        statement.order_by(CommunityMember.joined_date.desc()).offset(offset_val).limit(limit)
+    )).scalars().all()
 
     return [CommunityMemberRead.model_validate(m.model_dump()) for m in members]
 

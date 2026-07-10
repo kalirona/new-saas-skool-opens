@@ -141,7 +141,6 @@ export default function OrgEditUsage() {
                       <div className="flex items-center gap-2.5">
                         <Icon
                           size={16}
-                          weight="duotone"
                           className="text-gray-400"
                         />
                         <span className="text-sm font-medium text-gray-700">

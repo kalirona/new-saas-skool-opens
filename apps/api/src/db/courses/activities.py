@@ -46,7 +46,7 @@ class ActivityBase(SQLModel):
     activity_sub_type: ActivitySubTypeEnum
     content: dict = Field(default_factory=dict, sa_column=Column(JSON))
     details: Optional[dict] = Field(default=None, sa_column=Column(JSON))
-    published: bool = False
+    published: bool = Field(default=False, index=True)
     lock_type: ActivityLockType = ActivityLockType.PUBLIC
 
 
@@ -67,10 +67,10 @@ class Activity(ActivityBase, table=True):
     update_date: str = ""
     extra_metadata: Optional[dict] = Field(default=None, sa_column=Column(JSONB))
     # Versioning fields
-    current_version: int = Field(default=1)
+    current_version: int = Field(default=1, index=True)
     last_modified_by_id: Optional[int] = Field(
         default=None,
-        sa_column=Column(Integer, ForeignKey("user.id", ondelete="SET NULL"))
+        sa_column=Column(Integer, ForeignKey("user.id", ondelete="SET NULL"), index=True)
     )
 
 

@@ -1,6 +1,6 @@
 from typing import List, Dict, Optional, Any
 from fastapi import APIRouter, Depends, Request, Query, UploadFile
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlmodel.ext.asyncio.session import AsyncSession
 from src.core.events.database import get_db_session
 from src.db.users import PublicUser
@@ -20,21 +20,21 @@ router = APIRouter()
 
 
 class ResourceCreateRequest(BaseModel):
-    title: str
-    description: str | None = None
-    resource_type: str = "link"
-    url: str | None = None
+    title: str = Field(max_length=500)
+    description: str | None = Field(default=None, max_length=5000)
+    resource_type: str = Field(default="link", max_length=50)
+    url: str | None = Field(default=None, max_length=2000)
     file_id: str | None = None
     file_size: int | None = None
     file_mime: str | None = None
     file_format: str | None = None
     thumbnail_image: str | None = None
-    visibility: str = "private"
+    visibility: str = Field(default="private", max_length=20)
     locked: bool = False
-    content: str | None = None
+    content: str | None = Field(default=None, max_length=50000)
     metadata: Dict[str, Any] | None = None
-    embed_url: str | None = None
-    category: str | None = None
+    embed_url: str | None = Field(default=None, max_length=2000)
+    category: str | None = Field(default=None, max_length=100)
     featured: bool = False
     pinned: bool = False
     folder_id: int | None = None
@@ -43,21 +43,21 @@ class ResourceCreateRequest(BaseModel):
 
 
 class ResourceUpdateRequest(BaseModel):
-    title: str | None = None
-    description: str | None = None
-    resource_type: str | None = None
-    url: str | None = None
+    title: str | None = Field(default=None, max_length=500)
+    description: str | None = Field(default=None, max_length=5000)
+    resource_type: str | None = Field(default=None, max_length=50)
+    url: str | None = Field(default=None, max_length=2000)
     file_id: str | None = None
     file_size: int | None = None
     file_mime: str | None = None
     file_format: str | None = None
     thumbnail_image: str | None = None
-    visibility: str | None = None
+    visibility: str | None = Field(default=None, max_length=20)
     locked: bool | None = None
-    content: str | None = None
+    content: str | None = Field(default=None, max_length=50000)
     metadata: Dict[str, Any] | None = None
-    embed_url: str | None = None
-    category: str | None = None
+    embed_url: str | None = Field(default=None, max_length=2000)
+    category: str | None = Field(default=None, max_length=100)
     featured: bool | None = None
     pinned: bool | None = None
     folder_id: int | None = None

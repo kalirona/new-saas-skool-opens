@@ -1,6 +1,6 @@
 from typing import List
 from fastapi import APIRouter, Depends, Request, UploadFile
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 from src.core.events.database import get_db_session
@@ -28,8 +28,8 @@ router = APIRouter()
 
 
 class CommunityCreateRequest(BaseModel):
-    name: str
-    description: str | None = None
+    name: str = Field(max_length=255)
+    description: str | None = Field(default=None, max_length=5000)
     public: bool = True
     course_id: int | None = None
 

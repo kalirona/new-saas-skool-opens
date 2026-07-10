@@ -74,6 +74,7 @@ def save_message_to_history(aichat_uuid: str, user_message: str, ai_response: st
     if not r:
         return
 
+    try:
         # Get existing history
         history_key = f"chat_history:{aichat_uuid}"
         history_data = r.get(history_key)
@@ -110,7 +111,6 @@ def save_message_to_history(aichat_uuid: str, user_message: str, ai_response: st
             if len(user_message) > 50:
                 title += "..."
             save_chat_session_meta(aichat_uuid, user_id, title, course_uuid, mode=mode, org_id=org_id)
-
     except Exception as e:
         logger.error("Failed to save message to Redis: %s", e, exc_info=True)
 

@@ -551,7 +551,7 @@ const CourseEndView: React.FC<CourseEndViewProps> = ({
             )}
             
             <div className="bg-blue-100 p-4 rounded-full">
-              <Crosshair className="w-16 h-16 text-blue-600" />
+              <Target className="w-16 h-16 text-blue-600" />
             </div>
           </div>
           

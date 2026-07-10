@@ -27,6 +27,7 @@ export interface Community {
   name: string
   description: string | null
   public: boolean
+  locked: boolean
   community_type: string
   moderation_words: string[]
   moderation_settings: CommunityModerationSettings | null
@@ -47,6 +48,7 @@ export interface CommunityUpdate {
   name?: string
   description?: string | null
   public?: boolean
+  locked?: boolean
   community_type?: string
   moderation_words?: string[]
   moderation_settings?: CommunityModerationSettings

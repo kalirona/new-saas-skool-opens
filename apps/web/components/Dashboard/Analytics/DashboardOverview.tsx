@@ -86,8 +86,8 @@ function SparklineChart({
               boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
               fontSize: 11,
             }}
-            formatter={(value: number) => [value.toLocaleString(), '']}
-            labelFormatter={(label: string) => label}
+            formatter={(value: any) => [typeof value === 'number' ? value.toLocaleString() : String(value), '']}
+            labelFormatter={(label) => label}
           />
           <Area
             type="monotone"

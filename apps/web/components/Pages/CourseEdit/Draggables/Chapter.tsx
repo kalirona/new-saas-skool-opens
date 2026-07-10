@@ -51,9 +51,10 @@ function Chapter(props: any) {
     >
       {(provided, snapshot) => (
         <div
+          ref={provided.innerRef}
           {...provided.dragHandleProps}
           {...provided.draggableProps}
-          ref={provided.innerRef}
+          style={{ ...provided.draggableProps.style } as React.CSSProperties}
           className="max-w-(--breakpoint-2xl) mx-auto bg-white px-5 mb-5 p-3 text-[15px] block rounded-[9px] border border-white/20 shadow-md transition-all duration-200"
           key={props.info.list.chapter.id}
         >

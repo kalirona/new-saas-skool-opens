@@ -4,6 +4,7 @@ import { ArrowRight, BookOpen, Zap, Users, Mic, Presentation, MessageCircle, Bar
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useOnboarding } from '@components/Hooks/useOnboarding'
+import { BRAND_LOGOS } from '@/lib/brand'
 
 import WelcomeGlobe from './WelcomeGlobe'
 import { useTranslation } from 'react-i18next'

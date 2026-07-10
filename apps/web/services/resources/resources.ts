@@ -47,6 +47,8 @@ export interface ResourceDetail extends Resource {
   author_first_name?: string | null
   author_last_name?: string | null
   org_uuid?: string | null
+  user_has_access?: boolean
+  required_plan_name?: string | null
 }
 
 export interface ResourceCreate {

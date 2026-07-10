@@ -287,10 +287,12 @@ async def api_get_community_members(
     request: Request,
     community_uuid: str,
     status: str | None = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=50, ge=1, le=100),
     current_user: PublicUser = Depends(get_current_user),
     db_session: AsyncSession = Depends(get_db_session),
 ) -> List[CommunityMemberRead]:
-    return await get_community_members(request, community_uuid, current_user, db_session, status)
+    return await get_community_members(request, community_uuid, current_user, db_session, status, page, limit)
 
 
 @router.get(

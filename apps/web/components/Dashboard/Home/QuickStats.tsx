@@ -137,7 +137,7 @@ function QuickStatsContent() {
           <div key={stat.label} className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className={`p-1.5 rounded-lg ${stat.bg}`}>
-                <stat.icon size={14} weight="duotone" className={stat.color} />
+                <stat.icon size={14} className={stat.color} />
               </div>
               <span className="text-xs text-gray-500">{stat.label}</span>
             </div>

@@ -233,9 +233,9 @@ function ActivityElement(props: ActivitiyElementProps) {
               : 'nice-shadow bg-white hover:bg-gray-50'
             }`}
           key={props.activity.id}
-          {...provided.draggableProps}
           ref={provided.innerRef}
-          style={{ ...provided.draggableProps.style }}
+          {...provided.draggableProps}
+          style={{ ...provided.draggableProps.style } as React.CSSProperties}
         >
           {/* MousePointer2 checkbox */}
           <button

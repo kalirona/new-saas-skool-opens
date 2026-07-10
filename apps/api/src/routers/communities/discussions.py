@@ -1,6 +1,6 @@
 from typing import List, Dict
 from fastapi import APIRouter, Depends, Request, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from sqlmodel.ext.asyncio.session import AsyncSession
 from src.core.events.database import get_db_session
@@ -59,10 +59,10 @@ router = APIRouter()
 
 
 class DiscussionCreateRequest(BaseModel):
-    title: str
-    content: str | None = None
-    label: str | None = "general"
-    emoji: str | None = None
+    title: str = Field(max_length=500)
+    content: str | None = Field(default=None, max_length=50000)
+    label: str | None = Field(default="general", max_length=50)
+    emoji: str | None = Field(default=None, max_length=50)
     space_id: int | None = None
 
 
@@ -372,7 +372,7 @@ async def api_get_user_votes_batch(
 
 
 class CommentCreateRequest(BaseModel):
-    content: str
+    content: str = Field(max_length=10000)
 
 
 @router.post(

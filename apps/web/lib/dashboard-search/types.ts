@@ -8,6 +8,8 @@ export type SearchMetaGroup =
   | 'settings'
   | 'analytics'
   | 'payments'
+  | 'calendar'
+  | 'resources'
 
 // Loose so we can use Phosphor, Lucide, or any custom React icon component
 // without coupling to a specific icon family's prop types.

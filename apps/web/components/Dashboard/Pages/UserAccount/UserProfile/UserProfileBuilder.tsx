@@ -394,6 +394,7 @@ const UserProfileBuilder = () => {
                           <div
                             ref={provided.innerRef}
                             {...provided.draggableProps}
+                            style={{ ...provided.draggableProps.style } as React.CSSProperties}
                             onClick={() => setSelectedSection(index)}
                             className={`p-4 bg-white/80 backdrop-blur-xs rounded-lg cursor-pointer border ${
                               selectedSection === index 

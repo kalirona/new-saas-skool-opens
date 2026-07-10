@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import logging
 from typing import AsyncGenerator, Optional
 
@@ -53,7 +54,11 @@ class AnthropicProvider(AIProvider):
     async def count_tokens(self, text: str) -> int:
         try:
             from anthropic import Anthropic
-            client = Anthropic(api_key="")
+            api_key = self.config.get("api_key") or os.environ.get("ANTHROPIC_API_KEY", "")
+            if not api_key:
+                logger.warning("No Anthropic API key configured, falling back to approximate token count")
+                return len(text.split())
+            client = Anthropic(api_key=api_key)
             return client.count_tokens(text)
         except Exception:
             return len(text.split())

@@ -56,7 +56,7 @@ class Event(EventBase, table=True):
     )
     id: Optional[int] = Field(default=None, primary_key=True)
     org_id: int = Field(
-        sa_column=Column(BigInteger, ForeignKey("organization.id", ondelete="CASCADE"))
+        sa_column=Column(BigInteger, ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
     community_id: Optional[int] = Field(
         default=None,
@@ -67,7 +67,7 @@ class Event(EventBase, table=True):
         sa_column=Column(Integer, ForeignKey("space.id", ondelete="SET NULL"), nullable=True),
     )
     author_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
     )
     event_uuid: str = Field(default="", index=True)
     creation_date: str = ""

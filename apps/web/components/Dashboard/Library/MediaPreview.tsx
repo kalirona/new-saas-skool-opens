@@ -41,7 +41,7 @@ function tileIcon(resource: any): React.ComponentType<any> {
 function IconTile({ Icon }: { Icon: React.ComponentType<any> }) {
   return (
     <div className={`relative aspect-video flex items-center justify-center ${MEDIA_TONE}`}>
-      <Icon size={48} weight="fill" />
+      <Icon size={48} />
     </div>
   )
 }

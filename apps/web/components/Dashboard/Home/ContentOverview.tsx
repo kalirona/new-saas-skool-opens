@@ -176,7 +176,6 @@ export default function ContentOverview() {
             <div className={`p-1.5 rounded-lg ${card.iconBg}`}>
               <card.icon
                 size={14}
-                weight="duotone"
                 className={card.iconColor}
               />
             </div>

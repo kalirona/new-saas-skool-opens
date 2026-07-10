@@ -187,7 +187,7 @@ const UpdatesSection = () => {
               }
             `}
           >
-            <PenLine size={12} />
+            <PencilLine size={12} />
             <span>{selectedView === 'new' ? t('common.cancel') : t('courses.new_update')}</span>
           </button>
         )}

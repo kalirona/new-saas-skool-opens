@@ -1,5 +1,5 @@
 'use client'
-import { Folder, MoreVertical, ExternalLink, Pencil, Trash, Lock, Link } from 'lucide-react'
+import { Folder, MoreVertical, ExternalLink, Pencil, Trash, Lock, Link as LucideLink } from 'lucide-react'
 import { useOrg } from '@components/Contexts/OrgContext'
 import { useLHSession } from '@components/Contexts/LHSessionContext'
 import AuthenticatedClientElement from '@components/Security/AuthenticatedClientElement'
@@ -88,7 +88,7 @@ function FolderThumbnail({ folder, orgslug, org_id, isDashboard = false, onChang
                     onClick={() => shareFolderLink(orgslug, folder.folder_uuid, folder.name, t('library.link_copied'), t('library.link_copy_error'))}
                     className="w-full text-left flex items-center px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
                   >
-                    <Link className="mr-2 h-4 w-4" /> {t('library.copy_link')}
+                    <LucideLink className="mr-2 h-4 w-4" /> {t('library.copy_link')}
                   </button>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>

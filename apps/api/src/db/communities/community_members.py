@@ -17,16 +17,16 @@ class CommunityMember(CommunityMemberBase, table=True):
     )
     id: Optional[int] = Field(default=None, primary_key=True)
     community_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("community.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("community.id", ondelete="CASCADE"), index=True)
     )
     user_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
     )
     org_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
     plan_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("membershipplan.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("membershipplan.id", ondelete="CASCADE"), index=True)
     )
     billing_provider_subscription_id: Optional[str] = None
     billing_provider: Optional[str] = None

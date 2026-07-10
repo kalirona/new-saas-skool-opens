@@ -45,15 +45,15 @@ class Resource(ResourceBase, table=True):
     )
     folder_id: Optional[int] = Field(
         default=None,
-        sa_column=Column(Integer, ForeignKey("folder.id", ondelete="SET NULL"), nullable=True)
+        sa_column=Column(Integer, ForeignKey("folder.id", ondelete="SET NULL"), nullable=True, index=True)
     )
     community_id: Optional[int] = Field(
         default=None,
-        sa_column=Column(Integer, ForeignKey("community.id", ondelete="SET NULL"), nullable=True)
+        sa_column=Column(Integer, ForeignKey("community.id", ondelete="SET NULL"), nullable=True, index=True)
     )
     space_id: Optional[int] = Field(
         default=None,
-        sa_column=Column(Integer, ForeignKey("space.id", ondelete="SET NULL"), nullable=True)
+        sa_column=Column(Integer, ForeignKey("space.id", ondelete="SET NULL"), nullable=True, index=True)
     )
     resource_uuid: str = Field(default="", index=True)
     creation_date: str = ""

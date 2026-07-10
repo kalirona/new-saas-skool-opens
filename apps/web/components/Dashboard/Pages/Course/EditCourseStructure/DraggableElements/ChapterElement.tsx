@@ -229,9 +229,10 @@ function ChapterElement(props: ChapterElementProps) {
             snapshot.isDragging ? 'shadow-xl ring-2 ring-blue-500/20 rotate-1' : ''
           }`}
           key={props.chapter.chapter_uuid}
+          ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          ref={provided.innerRef}
+          style={{ ...provided.draggableProps.style } as React.CSSProperties}
         >
           <div className="flex flex-wrap items-center justify-between pb-3">
             <div className="flex grow items-center space-x-2 mb-2 sm:mb-0">

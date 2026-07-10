@@ -118,7 +118,7 @@ export default async function SpacePage(props: { params: Promise<{ orgslug: stri
     { name: 'Home', url: await getServerCanonicalUrl(params.orgslug, '/') },
     { name: 'Communities', url: await getServerCanonicalUrl(params.orgslug, '/communities') },
     { name: community.name, url: await getServerCanonicalUrl(params.orgslug, `/community/${params.communityuuid}`) },
-    { name: space.name },
+    { name: space.name, url: await getServerCanonicalUrl(params.orgslug, `/community/${params.communityuuid}/space/${params.spaceuuid}`) },
   ])
 
   return (

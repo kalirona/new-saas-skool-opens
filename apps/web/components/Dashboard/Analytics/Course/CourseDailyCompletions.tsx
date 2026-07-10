@@ -38,7 +38,7 @@ export default function CourseDailyCompletions({
 
   return (
     <CourseWidgetCard
-      icon={<WidgetIcon icon={CheckCircle} bg="bg-emerald-50" color="text-emerald-500" weight="fill" />}
+      icon={<WidgetIcon icon={CheckCircle} bg="bg-emerald-50" color="text-emerald-500" />}
       title={t('analytics.course_analytics.daily_completions.title')}
       subtitle={t('analytics.course_analytics.daily_completions.subtitle')}
       modalContent={

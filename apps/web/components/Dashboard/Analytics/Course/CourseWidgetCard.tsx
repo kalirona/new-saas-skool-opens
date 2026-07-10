@@ -91,16 +91,14 @@ export function WidgetIcon({
   icon: Icon,
   bg,
   color,
-  weight = 'bold',
 }: {
   icon: React.ComponentType<any>
   bg: string
   color: string
-  weight?: string
 }) {
   return (
     <div className={`p-2 rounded-lg ${bg} shrink-0`}>
-      <Icon size={18} weight={weight} className={color} />
+      <Icon size={18} className={color} />
     </div>
   )
 }

@@ -135,8 +135,8 @@ export default function OnboardingWizard() {
     try {
       await saveStep(currentStep)
       const newCommunity = await handleCreateCommunity()
-      if (newCommunity?.community_uuid) {
-        await handleCreatePlans(newCommunity.community_uuid)
+      if (newCommunity?.data?.community_uuid) {
+        await handleCreatePlans(newCommunity.data.community_uuid)
       }
       router.push(getUriWithOrg(org.slug, '/dash'))
     } catch (e) {

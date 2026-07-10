@@ -1,4 +1,4 @@
-import { Books, Folder, MessageCircle, Headphones, Box, ShoppingBag } from 'lucide-react'
+import { Book, Folder, MessageCircle, Headphones, Box, ShoppingBag } from 'lucide-react'
 import { useOrg } from '@components/Contexts/OrgContext'
 import { getUriWithOrg } from '@services/config/config'
 
@@ -11,7 +11,7 @@ import { getMenuColorClasses } from '@services/utils/ts/colorUtils'
 type Builtin = { feature: string; link: string; labelKey: string; Icon: any }
 
 const BUILTIN: Record<string, Builtin> = {
-  courses: { feature: 'courses', link: '/courses', labelKey: 'courses.courses', Icon: Books },
+  courses: { feature: 'courses', link: '/courses', labelKey: 'courses.courses', Icon: Book },
   library: { feature: 'folders', link: '/library', labelKey: 'library.library', Icon: Folder },
   podcasts: { feature: 'podcasts', link: '/podcasts', labelKey: 'podcasts.podcasts', Icon: Headphones },
   communities: { feature: 'communities', link: '/communities', labelKey: 'communities.title', Icon: MessageCircle },
@@ -72,7 +72,7 @@ function MenuLinks(props: { orgslug: string; primaryColor?: string }) {
         {rendered.map((it) => {
           const content = (
             <li className={`flex space-x-2 items-center ${colors.text} font-semibold`}>
-              <it.Icon size={20} weight="fill" /> <span>{it.label}</span>
+              <it.Icon size={20} /> <span>{it.label}</span>
             </li>
           )
           return it.external ? (

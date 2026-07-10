@@ -43,4 +43,5 @@ services:
     deploy:
       resources:
         limits:
+          cpus: "${API_CPU_LIMIT:-1}"
           memory: "${API_MEMORY_LIMIT:-512M}"
