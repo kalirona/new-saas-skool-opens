@@ -1,7 +1,7 @@
 from typing import List, Optional, Union, Dict, Any
 from uuid import uuid4
 from datetime import datetime
-from sqlmodel import select, update as sqlmodel_update
+from sqlmodel import select, func, update as sqlmodel_update
 from sqlmodel.ext.asyncio.session import AsyncSession
 from fastapi import HTTPException, Request
 
@@ -409,12 +409,15 @@ async def join_community(
 
         # Check max members limit
         if plan.max_members > 0:
-            count_stmt = select(CommunityMember).where(
+            await db_session.execute(
+                select(MembershipPlan).where(MembershipPlan.id == plan.id).with_for_update()
+            )
+            count_stmt = select(func.count(CommunityMember.id)).where(
                 CommunityMember.plan_id == plan.id,
                 CommunityMember.status == "active",
             )
-            member_count = (await db_session.execute(count_stmt)).scalars().all()
-            if len(member_count) >= plan.max_members:
+            member_count = (await db_session.execute(count_stmt)).scalar() or 0
+            if member_count >= plan.max_members:
                 raise HTTPException(status_code=403, detail="Membership plan is full")
 
         # For paid plans, billing integration is prepared but not enforced yet

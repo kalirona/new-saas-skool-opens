@@ -94,10 +94,6 @@ class AssignmentUpdate(SQLModel):
 class Assignment(AssignmentBase, table=True):
     """Represents an assignment with relevant details and foreign keys."""
     __table_args__ = (
-        Index("ix_assignment_course_id", "course_id"),
-        Index("ix_assignment_org_id", "org_id"),
-        Index("ix_assignment_chapter_id", "chapter_id"),
-        Index("ix_assignment_activity_id", "activity_id"),
     )
 
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -180,11 +176,6 @@ class AssignmentTaskUpdate(SQLModel):
 class AssignmentTask(AssignmentTaskBase, table=True):
     """Represents a task within an assignment with various attributes and foreign keys."""
     __table_args__ = (
-        Index("ix_assignmenttask_assignment", "assignment_id"),
-        Index("ix_assignmenttask_org", "org_id"),
-        Index("ix_assignmenttask_course", "course_id"),
-        Index("ix_assignmenttask_chapter", "chapter_id"),
-        Index("ix_assignmenttask_activity", "activity_id"),
     )
 
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -261,11 +252,6 @@ class AssignmentTaskSubmissionUpdate(SQLModel):
 class AssignmentTaskSubmission(AssignmentTaskSubmissionBase, table=True):
     """Represents a submission for a specific assignment task with grade and feedback."""
     __table_args__ = (
-        Index("ix_ats_user", "user_id"),
-        Index("ix_ats_activity", "activity_id"),
-        Index("ix_ats_course", "course_id"),
-        Index("ix_ats_chapter", "chapter_id"),
-        Index("ix_ats_assignment_task", "assignment_task_id"),
         Index("ix_ats_task_user", "assignment_task_id", "user_id"),
     )
 
@@ -366,8 +352,6 @@ class AssignmentUserSubmissionUpdate(SQLModel):
 class AssignmentUserSubmission(AssignmentUserSubmissionBase, table=True):
     """Represents the submission status of an assignment for a user."""
     __table_args__ = (
-        Index("ix_aus_user", "user_id"),
-        Index("ix_aus_assignment", "assignment_id"),
         Index("ix_aus_assignment_user", "assignment_id", "user_id"),
     )
 

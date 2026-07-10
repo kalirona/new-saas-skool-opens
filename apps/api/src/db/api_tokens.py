@@ -17,12 +17,11 @@ class APIToken(APITokenBase, table=True):
     __tablename__ = "apitoken"
     __table_args__ = (
         Index("ix_apitoken_token_prefix", "token_prefix"),
-        Index("ix_apitoken_org_id", "org_id"),
         {"extend_existing": True}
     )
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    token_uuid: str = Field(default="", max_length=100, index=True)  # format: apitoken_{uuid4()}
+    token_uuid: str = Field(default="", max_length=100, index=True, unique=True)  # format: apitoken_{uuid4()}
     token_prefix: str = Field(default="", max_length=12)
     token_hash: str = Field(default="", sa_column=Column(String(255)))
     org_id: int = Field(

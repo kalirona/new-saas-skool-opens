@@ -48,8 +48,6 @@ class PodcastBase(SQLModel):
 
 class Podcast(PodcastBase, table=True):
     __table_args__ = (
-        Index("ix_podcast_org", "org_id"),
-        Index("ix_podcast_uuid", "podcast_uuid"),
     )
     id: Optional[int] = Field(default=None, primary_key=True)
     org_id: int = Field(

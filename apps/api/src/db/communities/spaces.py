@@ -14,8 +14,6 @@ class SpaceBase(SQLModel):
 
 class Space(SpaceBase, table=True):
     __table_args__ = (
-        Index("ix_space_community", "community_id"),
-        Index("ix_space_org", "org_id"),
     )
     id: Optional[int] = Field(default=None, primary_key=True)
     community_id: int = Field(

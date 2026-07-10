@@ -7,10 +7,14 @@ Handles:
 - Per-request status sync from provider
 """
 
+import logging
 from typing import Optional, Dict, Any
+from sqlalchemy.exc import IntegrityError
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
 from datetime import datetime, timezone
+
+logger = logging.getLogger(__name__)
 from src.db.communities.community_members import CommunityMember, CommunityMemberCreate
 from src.db.communities.membership_plans import MembershipPlan
 from src.db.communities.communities import Community
@@ -137,6 +141,9 @@ async def upsert_member(
     expires_date: Optional[str] = None,
     trial_end_date: Optional[str] = None,
 ) -> CommunityMember:
+    # TOCTOU note: Two concurrent webhooks for the same subscription_id
+    # can race between the find and the create. The IntegrityError catch
+    # below handles the loser of the race.
     member = await find_member_by_subscription(db_session, subscription_id)
     now = _now_iso()
     if member:
@@ -148,18 +155,32 @@ async def upsert_member(
         await db_session.commit()
         await db_session.refresh(member)
     else:
-        member = await create_member(
-            db_session=db_session,
-            plan=plan,
-            community=community,
-            org=org,
-            user_id=user_id,
-            status=status,
-            subscription_id=subscription_id,
-            provider=provider,
-            expires_date=expires_date,
-            trial_end_date=trial_end_date,
-        )
+        try:
+            member = await create_member(
+                db_session=db_session,
+                plan=plan,
+                community=community,
+                org=org,
+                user_id=user_id,
+                status=status,
+                subscription_id=subscription_id,
+                provider=provider,
+                expires_date=expires_date,
+                trial_end_date=trial_end_date,
+            )
+        except IntegrityError:
+            await db_session.rollback()
+            member = await find_member_by_subscription(db_session, subscription_id)
+            if member:
+                member.status = status
+                member.expires_date = expires_date or member.expires_date
+                member.trial_end_date = trial_end_date or member.trial_end_date
+                member.update_date = now
+                db_session.add(member)
+                await db_session.commit()
+                await db_session.refresh(member)
+            else:
+                raise
     return member
 
 

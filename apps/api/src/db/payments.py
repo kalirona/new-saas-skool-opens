@@ -40,9 +40,6 @@ PAYMENT_STATUSES = ["succeeded", "failed", "refunded", "pending"]
 
 class Payment(SQLModel, table=True):
     __table_args__ = (
-        Index("ix_payment_org", "org_id"),
-        Index("ix_payment_community", "community_id"),
-        Index("ix_payment_user", "user_id"),
         Index("ix_payment_org_status", "org_id", "status"),
     )
     """A single payment or invoice received from a billing provider."""

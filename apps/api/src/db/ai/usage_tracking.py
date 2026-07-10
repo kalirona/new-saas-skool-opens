@@ -6,8 +6,6 @@ from sqlmodel import Field, SQLModel
 class AIRequestLog(SQLModel, table=True):
     """Detailed log of every AI generation request for usage tracking."""
     __table_args__ = (
-        Index("ix_airequestlog_org", "org_id"),
-        Index("ix_airequestlog_user", "user_id"),
         Index("ix_airequestlog_org_created", "org_id", "created_at"),
     )
     id: Optional[int] = Field(default=None, primary_key=True)

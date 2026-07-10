@@ -1,5 +1,5 @@
 from typing import Optional
-from sqlalchemy import Column, ForeignKey, Integer
+from sqlalchemy import Column, ForeignKey, Integer, Index
 from sqlmodel import Field, SQLModel
 
 
@@ -9,6 +9,9 @@ class PlanResourceBase(SQLModel):
 
 
 class PlanResource(PlanResourceBase, table=True):
+    __table_args__ = (
+        Index("ix_planresource_plan_resource", "plan_id", "resource_id", unique=True),
+    )
     id: Optional[int] = Field(default=None, primary_key=True)
     plan_id: int = Field(
         sa_column=Column(Integer, ForeignKey("membershipplan.id", ondelete="CASCADE"), index=True)

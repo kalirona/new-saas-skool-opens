@@ -9,7 +9,6 @@ class UserGroupBase(SQLModel):
 
 class UserGroup(UserGroupBase, table=True):
     __table_args__ = (
-        Index("ix_usergroup_org", "org_id"),
     )
     id: Optional[int] = Field(default=None, primary_key=True)
     org_id: int = Field(

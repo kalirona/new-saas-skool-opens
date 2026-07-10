@@ -9,7 +9,7 @@ MEMBERSHIP_STATUSES = ["draft", "active", "archived"]
 
 class MembershipPlanBase(SQLModel):
     name: str
-    slug: str = ""
+    slug: str = Field(default="", index=True, unique=True)
     description: Optional[str] = Field(default=None, sa_column=Column(Text))
     price: float = 0.0
     currency: str = "usd"
@@ -25,9 +25,6 @@ class MembershipPlanBase(SQLModel):
 
 class MembershipPlan(MembershipPlanBase, table=True):
     __table_args__ = (
-        Index("ix_membershipplan_community", "community_id"),
-        Index("ix_membershipplan_org", "org_id"),
-        Index("ix_membershipplan_usergroup", "usergroup_id"),
     )
     id: Optional[int] = Field(default=None, primary_key=True)
     community_id: int = Field(

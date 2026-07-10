@@ -23,9 +23,6 @@ class DiscussionBase(SQLModel):
 
 class Discussion(DiscussionBase, table=True):
     __table_args__ = (
-        Index("ix_discussion_community", "community_id"),
-        Index("ix_discussion_org", "org_id"),
-        Index("ix_discussion_author", "author_id"),
         Index("ix_discussion_community_pinned_date", "community_id", "is_pinned", "creation_date"),
     )
     id: Optional[int] = Field(default=None, primary_key=True)

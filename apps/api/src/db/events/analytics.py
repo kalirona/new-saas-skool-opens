@@ -5,8 +5,6 @@ from sqlmodel import Field, SQLModel
 
 class EventRegistrationCount(SQLModel, table=True):
     __table_args__ = (
-        Index("ix_eventregcount_event", "event_id"),
-        Index("ix_eventregcount_org", "org_id"),
     )
     """Daily snapshot of event registration counts."""
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -28,9 +26,6 @@ class EventRegistrationCount(SQLModel, table=True):
 
 class EventRecordingView(SQLModel, table=True):
     __table_args__ = (
-        Index("ix_eventrecordingview_recording", "recording_id"),
-        Index("ix_eventrecordingview_user", "user_id"),
-        Index("ix_eventrecordingview_org", "org_id"),
     )
     """Tracks views of event recordings."""
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -50,7 +45,6 @@ class EventRecordingView(SQLModel, table=True):
 
 class EventRSVPSnapshot(SQLModel, table=True):
     __table_args__ = (
-        Index("ix_eventrsvpsnapshot_event", "event_id"),
     )
     """Tracks RSVP changes over time for trend analysis."""
     id: Optional[int] = Field(default=None, primary_key=True)

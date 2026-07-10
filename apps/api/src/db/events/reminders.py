@@ -10,9 +10,6 @@ REMINDER_STATUSES = ["pending", "sent", "failed"]
 
 class EventReminder(SQLModel, table=True):
     __table_args__ = (
-        Index("ix_eventreminder_event", "event_id"),
-        Index("ix_eventreminder_user", "user_id"),
-        Index("ix_eventreminder_org", "org_id"),
         Index("ix_eventreminder_user_status", "user_id", "status"),
     )
     """A scheduled reminder for an event, sent to a specific user."""

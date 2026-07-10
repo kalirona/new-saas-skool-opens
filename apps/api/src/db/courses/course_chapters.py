@@ -6,7 +6,6 @@ from sqlmodel import Field, SQLModel
 class CourseChapter(SQLModel, table=True):
     __table_args__ = (
         Index("ix_coursechapter_course_order", "course_id", "order"),
-        Index("ix_coursechapter_org", "org_id"),
     )
     id: Optional[int] = Field(default=None, primary_key=True)
     order: int

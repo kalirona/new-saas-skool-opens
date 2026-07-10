@@ -21,9 +21,6 @@ class BlockBase(SQLModel):
 
 class Block(BlockBase, table=True):
     __table_args__ = (
-        Index("ix_block_org", "org_id"),
-        Index("ix_block_course", "course_id"),
-        Index("ix_block_activity", "activity_id"),
         Index("ix_block_activity_id", "activity_id", "id"),
     )
     id: Optional[int] = Field(default=None, primary_key=True)

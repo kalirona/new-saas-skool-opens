@@ -30,8 +30,6 @@ class CommunityBase(SQLModel):
 
 class Community(CommunityBase, table=True):
     __table_args__ = (
-        Index("ix_community_org_id", "org_id"),
-        Index("ix_community_course_id", "course_id"),
     )
     id: Optional[int] = Field(default=None, primary_key=True)
     org_id: int = Field(

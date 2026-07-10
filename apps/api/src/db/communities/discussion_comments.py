@@ -11,8 +11,6 @@ class DiscussionCommentBase(SQLModel):
 class DiscussionComment(DiscussionCommentBase, table=True):
     __tablename__ = "discussioncomment"
     __table_args__ = (
-        Index("ix_discussioncomment_discussion", "discussion_id"),
-        Index("ix_discussioncomment_author", "author_id"),
         Index("ix_discussioncomment_discussion_date", "discussion_id", "creation_date"),
     )
 

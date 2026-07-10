@@ -28,7 +28,7 @@ class EventBase(SQLModel):
     host_name: Optional[str] = None
     host_id: Optional[int] = Field(
         default=None,
-        sa_column=Column(Integer, ForeignKey("user.id", ondelete="SET NULL"), nullable=True),
+        sa_column=Column(Integer, ForeignKey("user.id", ondelete="SET NULL"), nullable=True, index=True),
     )
     start_date: str = Field(default="", sa_column=Column(String(20)))
     end_date: Optional[str] = Field(default=None, sa_column=Column(String(20)))
@@ -60,11 +60,11 @@ class Event(EventBase, table=True):
     )
     community_id: Optional[int] = Field(
         default=None,
-        sa_column=Column(Integer, ForeignKey("community.id", ondelete="SET NULL"), nullable=True),
+        sa_column=Column(Integer, ForeignKey("community.id", ondelete="SET NULL"), nullable=True, index=True),
     )
     space_id: Optional[int] = Field(
         default=None,
-        sa_column=Column(Integer, ForeignKey("space.id", ondelete="SET NULL"), nullable=True),
+        sa_column=Column(Integer, ForeignKey("space.id", ondelete="SET NULL"), nullable=True, index=True),
     )
     author_id: int = Field(
         sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)

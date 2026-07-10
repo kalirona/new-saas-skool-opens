@@ -1,3 +1,4 @@
+import asyncio
 from typing import List, Optional, Union
 from uuid import uuid4
 from datetime import datetime
@@ -135,42 +136,49 @@ async def get_resource(
     base = ResourceRead.model_validate(resource.model_dump())
     detail = ResourceDetailRead(**base.model_dump())
 
-    org = (
-        await db_session.execute(select(Organization).where(Organization.id == resource.org_id))
-    ).scalars().first()
-    if org:
-        detail.org_uuid = org.org_uuid
-
+    futures = [
+        db_session.execute(select(Organization).where(Organization.id == resource.org_id)),
+        db_session.execute(select(User).where(User.id == resource.author_id)),
+    ]
     if resource.community_id:
-        community = (
-            await db_session.execute(
-                select(Community).where(Community.id == resource.community_id)
-            )
-        ).scalars().first()
-        if community:
-            detail.community_name = community.name
-            detail.community_uuid = community.community_uuid
-            detail.community_thumbnail = community.thumbnail_image
-
-    author = (
-        await db_session.execute(select(User).where(User.id == resource.author_id))
-    ).scalars().first()
-    if author:
-        detail.author_username = author.username
-        detail.author_avatar = author.avatar_image
-        detail.author_first_name = author.first_name
-        detail.author_last_name = author.last_name
-
+        futures.append(
+            db_session.execute(select(Community).where(Community.id == resource.community_id))
+        )
     if resource.community_id and not isinstance(current_user, AnonymousUser):
-        member = (
-            await db_session.execute(
+        futures.append(
+            db_session.execute(
                 select(CommunityMember).where(
                     CommunityMember.community_id == resource.community_id,
                     CommunityMember.user_id == current_user.id,
                     CommunityMember.status == "active",
                 )
             )
-        ).scalars().first()
+        )
+
+    results = await asyncio.gather(*futures)
+
+    org = results[0].scalars().first()
+    if org:
+        detail.org_uuid = org.org_uuid
+
+    author = results[1].scalars().first()
+    if author:
+        detail.author_username = author.username
+        detail.author_avatar = author.avatar_image
+        detail.author_first_name = author.first_name
+        detail.author_last_name = author.last_name
+
+    ri = 2
+    if resource.community_id:
+        community = results[ri].scalars().first()
+        ri += 1
+        if community:
+            detail.community_name = community.name
+            detail.community_uuid = community.community_uuid
+            detail.community_thumbnail = community.thumbnail_image
+
+    if resource.community_id and not isinstance(current_user, AnonymousUser):
+        member = results[ri].scalars().first()
         detail.user_has_access = member is not None
 
         if not member:

@@ -258,11 +258,11 @@ async def create_certificate_user(
         # Require course ownership or instructor role for creating certificates
         await check_resource_access(request, db_session, current_user, course.course_uuid, AccessAction.CREATE)
 
-    # Check if certificate user already exists
+    # Check if certificate user already exists (with row lock to prevent duplicates)
     statement = select(CertificateUser).where(
         CertificateUser.user_id == user_id,
         CertificateUser.certification_id == certification_id
-    )
+    ).with_for_update()
     existing_certificate_user = (await db_session.execute(statement)).scalars().first()
 
     if existing_certificate_user:

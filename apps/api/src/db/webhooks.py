@@ -9,8 +9,6 @@ class WebhookEndpoint(SQLModel, table=True):
 
     __tablename__ = "webhook_endpoint"
     __table_args__ = (
-        Index("ix_webhook_endpoint_webhook_uuid", "webhook_uuid"),
-        Index("ix_webhook_endpoint_org_id", "org_id"),
         Index("ix_webhook_endpoint_org_active", "org_id", "is_active"),
         Index("ix_webhook_endpoint_source", "org_id", "source"),
         {"extend_existing": True},
@@ -49,7 +47,6 @@ class WebhookDeliveryLog(SQLModel, table=True):
 
     __tablename__ = "webhook_delivery_log"
     __table_args__ = (
-        Index("ix_webhook_delivery_log_webhook_id", "webhook_id"),
         Index("ix_webhook_delivery_log_created_at", "created_at"),
         {"extend_existing": True},
     )

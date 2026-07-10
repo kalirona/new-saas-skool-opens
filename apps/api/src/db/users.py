@@ -122,12 +122,12 @@ class SuperadminAPITokenUser(SQLModel):
 
 class User(UserBase, table=True):
     __table_args__ = (
-        Index("ix_user_email", "email"),
+        Index("ix_user_email", "email", unique=True),
         {"extend_existing": True},
     )
     id: Optional[int] = Field(default=None, primary_key=True)
     password: str = ""
-    user_uuid: str = Field(default="", index=True)
+    user_uuid: str = Field(default="", index=True, unique=True)
     email_verified: bool = False
     email_verified_at: Optional[str] = None
     failed_login_attempts: int = 0

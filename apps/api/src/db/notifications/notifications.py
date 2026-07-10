@@ -22,7 +22,6 @@ class NotificationBase(SQLModel):
 class Notification(NotificationBase, table=True):
     __table_args__ = (
         Index("ix_notification_user_read", "user_id", "is_read"),
-        Index("ix_notification_org", "org_id"),
     )
     id: Optional[int] = Field(default=None, primary_key=True)
     org_id: int = Field(

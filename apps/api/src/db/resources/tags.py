@@ -1,5 +1,5 @@
 from typing import Optional, List
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Index
 from sqlmodel import Field, SQLModel
 
 
@@ -29,6 +29,9 @@ class TagRead(TagBase):
 
 
 class ResourceTag(SQLModel, table=True):
+    __table_args__ = (
+        Index("ix_resourcetag_resource_tag", "resource_id", "tag_id", unique=True),
+    )
     id: Optional[int] = Field(default=None, primary_key=True)
     resource_id: int = Field(
         sa_column=Column(Integer, ForeignKey("resource.id", ondelete="CASCADE"), nullable=False, index=True)

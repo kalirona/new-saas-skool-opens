@@ -7,8 +7,6 @@ from pgvector.sqlalchemy import Vector
 class CourseEmbedding(SQLModel, table=True):
     __tablename__ = "course_embedding"
     __table_args__ = (
-        Index("ix_course_embedding_org_id", "org_id"),
-        Index("ix_course_embedding_course_id", "course_id"),
     )
 
     id: Optional[int] = Field(default=None, primary_key=True)

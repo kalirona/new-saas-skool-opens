@@ -52,7 +52,6 @@ class ActivityBase(SQLModel):
 
 class Activity(ActivityBase, table=True):
     __table_args__ = (
-        Index("ix_activity_last_modified", "last_modified_by_id"),
     )
     id: Optional[int] = Field(default=None, primary_key=True)
     org_id: int = Field(

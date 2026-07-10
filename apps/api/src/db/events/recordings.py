@@ -8,8 +8,6 @@ RECORDING_TYPES = ["recording", "slides", "resource", "transcript"]
 
 class EventRecording(SQLModel, table=True):
     __table_args__ = (
-        Index("ix_eventrecording_event", "event_id"),
-        Index("ix_eventrecording_org", "org_id"),
     )
     """Recording, slide deck, resource file, or transcript attached to a past event."""
     id: Optional[int] = Field(default=None, primary_key=True)

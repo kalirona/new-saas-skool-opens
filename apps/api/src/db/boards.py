@@ -23,7 +23,7 @@ class Board(BoardBase, table=True):
         sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
     board_uuid: str = Field(default="", index=True)
-    created_by: int = Field(
+    created_by: Optional[int] = Field(
         sa_column=Column(Integer, ForeignKey("user.id", ondelete="SET NULL"), nullable=True, index=True)
     )
     ydoc_state: Optional[bytes] = Field(default=None, sa_column=Column(LargeBinary, nullable=True))

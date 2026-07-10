@@ -5,8 +5,6 @@ from sqlmodel import Field, SQLModel
 
 class CourseUpdate(SQLModel, table=True):
     __table_args__ = (
-        Index("ix_courseupdate_course_id", "course_id"),
-        Index("ix_courseupdate_org_id", "org_id"),
     )
     id: Optional[int] = Field(default=None, primary_key=True)
     courseupdate_uuid: str = Field(default="", index=True)

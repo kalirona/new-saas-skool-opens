@@ -3,6 +3,7 @@ Event service — full CRUD + RSVP + meeting provider integration.
 """
 
 import asyncio
+from collections import defaultdict
 from typing import List, Optional, Union, Dict, Any
 from uuid import uuid4
 from datetime import datetime
@@ -353,10 +354,55 @@ async def get_events_by_org(
 
     # Filter by membership access for non-admin users
     user_id = resolve_acting_user_id(current_user)
+    event_ids = [e.id for e in events]
+    # Batch pre-fetch all plan-event relationships
+    plan_events = (
+        await db_session.execute(
+            select(PlanEvent).where(PlanEvent.event_id.in_(event_ids))
+        )
+    ).scalars().all()
+    event_plan_map = defaultdict(list)
+    for pe in plan_events:
+        event_plan_map[pe.event_id].append(pe.plan_id)
+    # Pre-fetch all involved membership plans
+    all_plan_ids = list(set(pid for pids in event_plan_map.values() for pid in pids))
+    if all_plan_ids:
+        plans = (
+            await db_session.execute(
+                select(MembershipPlan).where(MembershipPlan.id.in_(all_plan_ids))
+            )
+        ).scalars().all()
+        plan_map = {p.id: p for p in plans}
+    else:
+        plan_map = {}
+    # Pre-fetch all UserGroupUser records for this user
+    usergroup_ids = list({
+        plan_map[pid].usergroup_id for plan_id_list in event_plan_map.values()
+        for pid in plan_id_list if plan_map.get(pid) and plan_map[pid].usergroup_id
+    })
+    ug_user_map = {}
+    if usergroup_ids:
+        ug_users = (
+            await db_session.execute(
+                select(UserGroupUser).where(
+                    UserGroupUser.usergroup_id.in_(usergroup_ids),
+                    UserGroupUser.user_id == user_id,
+                )
+            )
+        ).scalars().all()
+        ug_user_map = {u.usergroup_id for u in ug_users}
     filtered = []
     for e in events:
-        if await check_event_membership_access(e, user_id, db_session):
+        plan_ids_for_event = event_plan_map.get(e.id, [])
+        if not plan_ids_for_event:
             filtered.append(e)
+        else:
+            has_access = any(
+                plan_map.get(pid) and plan_map[pid].usergroup_id in ug_user_map
+                for pid in plan_ids_for_event
+            )
+            if has_access:
+                filtered.append(e)
     return [EventRead.model_validate(e.model_dump()) for e in filtered], total
 
 
@@ -520,6 +566,9 @@ async def rsvp_event(
 
     capacity = event.capacity
     if capacity and rsvp_data.status in ("going", "maybe"):
+        await db_session.execute(
+            select(Event).where(Event.id == event.id).with_for_update()
+        )
         going_count = (
             await db_session.execute(
                 select(func.count(RSVP.id)).where(
@@ -908,10 +957,10 @@ async def schedule_reminders_for_event(
             created_at=_now_iso(),
             updated_at=_now_iso(),
         )
-        db_session.add(reminder)
         created.append(reminder)
 
     if created:
+        db_session.add_all(created)
         await db_session.commit()
 
     return [EventReminderRead.model_validate(r.model_dump()) for r in created]
@@ -1127,18 +1176,29 @@ async def get_event_registration_counts(
         request, db_session, current_user, event_uuid, AccessAction.READ
     )
 
-    rsvps = (
+    counts = (
         await db_session.execute(
-            select(RSVP).where(RSVP.event_id == event.id)
+            select(RSVP.status, func.count(RSVP.id)).where(
+                RSVP.event_id == event.id
+            ).group_by(RSVP.status)
         )
-    ).scalars().all()
+    ).all()
 
-    total = len(rsvps)
-    going = sum(1 for r in rsvps if r.status == "going")
-    maybe = sum(1 for r in rsvps if r.status == "maybe")
-    waitlist = sum(1 for r in rsvps if r.status == "waitlist")
-    not_going = sum(1 for r in rsvps if r.status == "not_going")
-    attended = sum(1 for r in rsvps if r.attended)
+    count_map = {row[0]: row[1] for row in counts}
+    going = count_map.get("going", 0)
+    maybe = count_map.get("maybe", 0)
+    waitlist = count_map.get("waitlist", 0)
+    not_going = count_map.get("not_going", 0)
+    total = going + maybe + waitlist + not_going
+
+    attended = (
+        await db_session.execute(
+            select(func.count(RSVP.id)).where(
+                RSVP.event_id == event.id,
+                RSVP.attended == True,
+            )
+        )
+    ).scalar() or 0
 
     return {
         "total_rsvps": total,
@@ -1196,17 +1256,21 @@ async def get_recording_views(
     if not recording:
         raise HTTPException(status_code=404, detail="Recording not found")
 
-    views = (
+    count_result = (
         await db_session.execute(
-            select(EventRecordingView).where(
+            select(
+                func.count(EventRecordingView.id),
+                func.count(func.distinct(EventRecordingView.user_id)),
+                func.coalesce(func.sum(EventRecordingView.watch_seconds), 0),
+            ).where(
                 EventRecordingView.recording_id == recording_id
             )
         )
-    ).scalars().all()
+    ).one()
 
-    total_views = len(views)
-    unique_users = len(set(v.user_id for v in views))
-    total_watch_seconds = sum(v.watch_seconds for v in views)
+    total_views = count_result[0] or 0
+    unique_users = count_result[1] or 0
+    total_watch_seconds = count_result[2] or 0
 
     return {
         "total_views": total_views,
