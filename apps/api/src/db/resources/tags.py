@@ -11,7 +11,7 @@ class TagBase(SQLModel):
 class Tag(TagBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     org_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"), nullable=False)
+        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"), nullable=False, index=True)
     )
     tag_uuid: str = Field(default="", index=True)
     creation_date: str = ""
@@ -31,8 +31,8 @@ class TagRead(TagBase):
 class ResourceTag(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     resource_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("resource.id", ondelete="CASCADE"), nullable=False)
+        sa_column=Column(Integer, ForeignKey("resource.id", ondelete="CASCADE"), nullable=False, index=True)
     )
     tag_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("tag.id", ondelete="CASCADE"), nullable=False)
+        sa_column=Column(Integer, ForeignKey("tag.id", ondelete="CASCADE"), nullable=False, index=True)
     )

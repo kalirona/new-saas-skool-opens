@@ -60,7 +60,7 @@ from src.services.admin.admin import (
 )
 
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 
 # ── Response models for OpenAPI documentation ────────────────────────────────
@@ -246,8 +246,8 @@ class ChangeRoleResponse(BaseModel):
 
 
 class CreateUserGroupRequest(BaseModel):
-    name: str = Field(min_length=1)
-    description: str = ""
+    name: str = Field(min_length=1, max_length=255)
+    description: str = Field(default="", max_length=5000)
 
 
 class DeleteUserGroupResponse(BaseModel):

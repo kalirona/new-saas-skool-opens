@@ -13,13 +13,13 @@ class PlaygroundReaction(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     playground_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("playground.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("playground.id", ondelete="CASCADE"), index=True)
     )
     user_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
     )
     emoji: str = Field(sa_column=Column(String(50)))
-    reaction_uuid: str = ""
+    reaction_uuid: str = Field(default="", index=True)
     creation_date: str = ""
 
 

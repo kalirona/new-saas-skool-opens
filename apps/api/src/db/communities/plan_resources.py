@@ -11,10 +11,10 @@ class PlanResourceBase(SQLModel):
 class PlanResource(PlanResourceBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     plan_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("membershipplan.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("membershipplan.id", ondelete="CASCADE"), index=True)
     )
     resource_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("resource.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("resource.id", ondelete="CASCADE"), index=True)
     )
     creation_date: str = ""
     update_date: str = ""

@@ -22,14 +22,14 @@ class APIToken(APITokenBase, table=True):
     )
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    token_uuid: str = Field(default="", max_length=100)  # format: apitoken_{uuid4()}
+    token_uuid: str = Field(default="", max_length=100, index=True)  # format: apitoken_{uuid4()}
     token_prefix: str = Field(default="", max_length=12)
     token_hash: str = Field(default="", sa_column=Column(String(255)))
     org_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"), nullable=False)
+        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"), nullable=False, index=True)
     )
     created_by_user_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
+        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
     )
     creation_date: str = ""
     update_date: str = ""

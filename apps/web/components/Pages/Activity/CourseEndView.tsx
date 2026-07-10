@@ -1,5 +1,6 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import DOMPurify from 'dompurify';
 import dynamic from 'next/dynamic';
 const ReactConfetti = dynamic(() => import('react-confetti'), { ssr: false });
 import { Trophy, ArrowLeft, BookOpen, Target, Download, Shield } from 'lucide-react';
@@ -189,7 +190,7 @@ const CourseEndView: React.FC<CourseEndViewProps> = ({
       });
 
       // Create certificate content
-      certificateDiv.innerHTML = `
+      certificateDiv.innerHTML = DOMPurify.sanitize(`
         <div style="
           position: absolute;
           top: 20px;
@@ -332,7 +333,7 @@ const CourseEndView: React.FC<CourseEndViewProps> = ({
         ">
           ${t('certificate.certificate_verify_message')} ${qrCodeLink}
         </div>
-      `;
+      `);
 
       // Add to document temporarily
       document.body.appendChild(certificateDiv);

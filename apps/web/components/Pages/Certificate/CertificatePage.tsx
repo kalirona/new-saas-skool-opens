@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import DOMPurify from 'dompurify';
 import { useLHSession } from '@components/Contexts/LHSessionContext';
 import { useOrg } from '@components/Contexts/OrgContext';
 import { getUserCertificates } from '@services/courses/certifications';
@@ -135,7 +136,7 @@ const CertificatePage: React.FC<CertificatePageProps> = ({ orgslug, courseid, qr
       });
 
       // Create certificate content
-      certificateDiv.innerHTML = `
+      certificateDiv.innerHTML = DOMPurify.sanitize(`
         <div style="
           position: absolute;
           top: 20px;
@@ -278,7 +279,7 @@ const CertificatePage: React.FC<CertificatePageProps> = ({ orgslug, courseid, qr
         ">
           This certificate can be verified at ${qrCodeData.replace('https://', '').replace('http://', '')}
         </div>
-      `;
+      `);
 
       // Add to document temporarily
       document.body.appendChild(certificateDiv);

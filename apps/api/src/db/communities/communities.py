@@ -20,11 +20,11 @@ COMMUNITY_TYPES = ["open", "paid", "invite_only", "hidden"]
 
 
 class CommunityBase(SQLModel):
-    name: str
+    name: str = Field(max_length=255)
     description: Optional[str] = Field(default=None, sa_column=Column(Text))
     public: bool = True
-    thumbnail_image: Optional[str] = Field(default="")
-    community_type: str = "open"
+    thumbnail_image: Optional[str] = Field(default="", max_length=2000)
+    community_type: str = Field(default="open", max_length=20)
     locked: bool = False
 
 
@@ -35,11 +35,11 @@ class Community(CommunityBase, table=True):
     )
     id: Optional[int] = Field(default=None, primary_key=True)
     org_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
     course_id: Optional[int] = Field(
         default=None,
-        sa_column=Column(Integer, ForeignKey("course.id", ondelete="SET NULL"))
+        sa_column=Column(Integer, ForeignKey("course.id", ondelete="SET NULL"), index=True)
     )
     community_uuid: str = Field(default="", index=True)
     moderation_words: List[str] = Field(default=[], sa_column=Column(JSON, default=[]))
@@ -56,10 +56,10 @@ class CommunityCreate(CommunityBase):
 
 
 class CommunityUpdate(SQLModel):
-    name: Optional[str] = None
+    name: Optional[str] = Field(default=None, max_length=255)
     description: Optional[str] = None
     public: Optional[bool] = None
-    community_type: Optional[str] = None
+    community_type: Optional[str] = Field(default=None, max_length=20)
     locked: Optional[bool] = None
     moderation_words: Optional[List[str]] = None
     moderation_settings: Optional[Dict[str, Any]] = None

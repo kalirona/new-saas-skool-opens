@@ -70,6 +70,10 @@ RUN bun run build
 # ───────────────────────────────────────────────
 FROM python:3.14.3-slim-bookworm AS runner
 
+# Create non-root user for runtime (currently unused; pm2/nginx require root for port 80)
+RUN groupadd --system --gid 1001 learnhouse \
+    && useradd --system --uid 1001 --gid learnhouse --shell /bin/bash --create-home learnhouse
+
 # Single apt layer: nginx, curl, netcat, node, pm2
 RUN apt-get update \
     && apt-get install -y --no-install-recommends nginx curl netcat-openbsd ca-certificates gnupg unzip build-essential \

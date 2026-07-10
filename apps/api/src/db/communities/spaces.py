@@ -19,10 +19,10 @@ class Space(SpaceBase, table=True):
     )
     id: Optional[int] = Field(default=None, primary_key=True)
     community_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("community.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("community.id", ondelete="CASCADE"), index=True)
     )
     org_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
     space_uuid: str = Field(default="", index=True)
     creation_date: str = ""

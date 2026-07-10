@@ -106,16 +106,16 @@ class Assignment(AssignmentBase, table=True):
     assignment_uuid: str = Field(default="", index=True)
 
     org_id: int = Field(
-        sa_column=Column("org_id", ForeignKey("organization.id", ondelete="CASCADE"))
+        sa_column=Column("org_id", ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
     course_id: int = Field(
-        sa_column=Column("course_id", ForeignKey("course.id", ondelete="CASCADE"))
+        sa_column=Column("course_id", ForeignKey("course.id", ondelete="CASCADE"), index=True)
     )
     chapter_id: int = Field(
-        sa_column=Column("chapter_id", ForeignKey("chapter.id", ondelete="CASCADE"))
+        sa_column=Column("chapter_id", ForeignKey("chapter.id", ondelete="CASCADE"), index=True)
     )
     activity_id: int = Field(
-        sa_column=Column("activity_id", ForeignKey("activity.id", ondelete="CASCADE"))
+        sa_column=Column("activity_id", ForeignKey("activity.id", ondelete="CASCADE"), index=True)
     )
 
 
@@ -189,26 +189,26 @@ class AssignmentTask(AssignmentTaskBase, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
 
-    assignment_task_uuid: str
+    assignment_task_uuid: str = Field(default="", index=True)
     creation_date: str
     update_date: str
 
     assignment_id: int = Field(
         sa_column=Column(
-            "assignment_id", ForeignKey("assignment.id", ondelete="CASCADE")
+            "assignment_id", ForeignKey("assignment.id", ondelete="CASCADE"), index=True
         )
     )
     org_id: int = Field(
-        sa_column=Column("org_id", ForeignKey("organization.id", ondelete="CASCADE"))
+        sa_column=Column("org_id", ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
     course_id: int = Field(
-        sa_column=Column("course_id", ForeignKey("course.id", ondelete="CASCADE"))
+        sa_column=Column("course_id", ForeignKey("course.id", ondelete="CASCADE"), index=True)
     )
     chapter_id: int = Field(
-        sa_column=Column("chapter_id", ForeignKey("chapter.id", ondelete="CASCADE"))
+        sa_column=Column("chapter_id", ForeignKey("chapter.id", ondelete="CASCADE"), index=True)
     )
     activity_id: int = Field(
-        sa_column=Column("activity_id", ForeignKey("activity.id", ondelete="CASCADE"))
+        sa_column=Column("activity_id", ForeignKey("activity.id", ondelete="CASCADE"), index=True)
     )
 
 
@@ -270,27 +270,27 @@ class AssignmentTaskSubmission(AssignmentTaskSubmissionBase, table=True):
     )
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    assignment_task_submission_uuid: str
+    assignment_task_submission_uuid: str = Field(default="", index=True)
     task_submission: Dict = Field(default_factory=dict, sa_column=Column(JSON))
     grade: int = 0  # Task-local raw score; aggregated into AssignmentUserSubmission.grade
     task_submission_grade_feedback: str
     assignment_type: AssignmentTaskTypeEnum
 
     user_id: int = Field(
-        sa_column=Column("user_id", ForeignKey("user.id", ondelete="CASCADE"))
+        sa_column=Column("user_id", ForeignKey("user.id", ondelete="CASCADE"), index=True)
     )
     activity_id: int = Field(
-        sa_column=Column("activity_id", ForeignKey("activity.id", ondelete="CASCADE"))
+        sa_column=Column("activity_id", ForeignKey("activity.id", ondelete="CASCADE"), index=True)
     )
     course_id: int = Field(
-        sa_column=Column("course_id", ForeignKey("course.id", ondelete="CASCADE"))
+        sa_column=Column("course_id", ForeignKey("course.id", ondelete="CASCADE"), index=True)
     )
     chapter_id: int = Field(
-        sa_column=Column("chapter_id", ForeignKey("chapter.id", ondelete="CASCADE"))
+        sa_column=Column("chapter_id", ForeignKey("chapter.id", ondelete="CASCADE"), index=True)
     )
     assignment_task_id: int = Field(
         sa_column=Column(
-            "assignment_task_id", ForeignKey("assignmenttask.id", ondelete="CASCADE")
+            "assignment_task_id", ForeignKey("assignmenttask.id", ondelete="CASCADE"), index=True
         )
     )
 
@@ -374,7 +374,7 @@ class AssignmentUserSubmission(AssignmentUserSubmissionBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     creation_date: str
     update_date: str
-    assignmentusersubmission_uuid: str
+    assignmentusersubmission_uuid: str = Field(default="", index=True)
 
     submission_status: AssignmentUserSubmissionStatus = (
         AssignmentUserSubmissionStatus.SUBMITTED
@@ -383,10 +383,10 @@ class AssignmentUserSubmission(AssignmentUserSubmissionBase, table=True):
     overall_feedback: Optional[str] = None
     attempt_number: int = 1
     user_id: int = Field(
-        sa_column=Column("user_id", ForeignKey("user.id", ondelete="CASCADE"))
+        sa_column=Column("user_id", ForeignKey("user.id", ondelete="CASCADE"), index=True)
     )
     assignment_id: int = Field(
         sa_column=Column(
-            "assignment_id", ForeignKey("assignment.id", ondelete="CASCADE")
+            "assignment_id", ForeignKey("assignment.id", ondelete="CASCADE"), index=True
         )
     )

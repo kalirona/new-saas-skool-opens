@@ -25,11 +25,11 @@ class SuperadminAPIToken(SuperadminAPITokenBase, table=True):
     )
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    token_uuid: str = Field(default="", max_length=100)  # satoken_{uuid4()}
+    token_uuid: str = Field(default="", max_length=100, index=True)  # satoken_{uuid4()}
     token_prefix: str = Field(default="", max_length=15)
     token_hash: str = Field(default="", sa_column=Column(String(255)))
     created_by_user_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
+        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
     )
     creation_date: str = ""
     update_date: str = ""

@@ -18,12 +18,12 @@ class DiscussionComment(DiscussionCommentBase, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     discussion_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("discussion.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("discussion.id", ondelete="CASCADE"), index=True)
     )
     author_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
     )
-    comment_uuid: str = ""
+    comment_uuid: str = Field(default="", index=True)
     upvote_count: int = 0
     creation_date: str = ""
     update_date: str = ""

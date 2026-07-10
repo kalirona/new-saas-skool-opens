@@ -13,11 +13,11 @@ class CourseUpdate(SQLModel, table=True):
     title: str
     content: str
     course_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("course.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("course.id", ondelete="CASCADE"), index=True)
     )
     linked_activity_uuids: Optional[str] = Field(default=None)
     org_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
     creation_date: str
     update_date: str

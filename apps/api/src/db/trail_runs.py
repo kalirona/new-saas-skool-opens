@@ -31,7 +31,7 @@ class TrailRun(SQLModel, table=True):
         sa_column=Column(Integer, ForeignKey("course.id", ondelete="CASCADE"), index=True)
     )
     org_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
     user_id: int = Field(
         sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)

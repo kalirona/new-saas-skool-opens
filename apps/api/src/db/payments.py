@@ -48,19 +48,19 @@ class Payment(SQLModel, table=True):
     """A single payment or invoice received from a billing provider."""
     id: Optional[int] = Field(default=None, primary_key=True)
     org_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
     community_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("community.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("community.id", ondelete="CASCADE"), index=True)
     )
     member_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("communitymember.id", ondelete="SET NULL"), nullable=True)
+        sa_column=Column(Integer, ForeignKey("communitymember.id", ondelete="SET NULL"), nullable=True, index=True)
     )
     user_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
     )
     plan_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("membershipplan.id", ondelete="SET NULL"), nullable=True)
+        sa_column=Column(Integer, ForeignKey("membershipplan.id", ondelete="SET NULL"), nullable=True, index=True)
     )
     provider: str = Field(sa_column=Column(String(20)))
     provider_payment_id: str = Field(sa_column=Column(String(255), index=True))

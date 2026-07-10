@@ -18,13 +18,13 @@ class EventReminder(SQLModel, table=True):
     """A scheduled reminder for an event, sent to a specific user."""
     id: Optional[int] = Field(default=None, primary_key=True)
     event_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("event.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("event.id", ondelete="CASCADE"), index=True)
     )
     user_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
     )
     org_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
     remind_at: str = Field(sa_column=Column(String(30)))
     channel: str = Field(default="both", sa_column=Column(String(10)))

@@ -24,7 +24,7 @@ class Board(BoardBase, table=True):
     )
     board_uuid: str = Field(default="", index=True)
     created_by: int = Field(
-        sa_column=Column(Integer, ForeignKey("user.id", ondelete="SET NULL"), nullable=True)
+        sa_column=Column(Integer, ForeignKey("user.id", ondelete="SET NULL"), nullable=True, index=True)
     )
     ydoc_state: Optional[bytes] = Field(default=None, sa_column=Column(LargeBinary, nullable=True))
     creation_date: str = ""

@@ -108,7 +108,7 @@ class Role(RoleBase, table=True):
         sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
     role_type: RoleTypeEnum = RoleTypeEnum.TYPE_GLOBAL
-    role_uuid: str = ""
+    role_uuid: str = Field(default="", index=True)
     creation_date: str = ""
     update_date: str = ""
 

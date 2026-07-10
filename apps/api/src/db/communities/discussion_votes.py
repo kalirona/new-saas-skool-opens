@@ -15,12 +15,12 @@ class DiscussionVote(DiscussionVoteBase, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     discussion_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("discussion.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("discussion.id", ondelete="CASCADE"), index=True)
     )
     user_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
     )
-    vote_uuid: str = ""
+    vote_uuid: str = Field(default="", index=True)
     creation_date: str = ""
 
 

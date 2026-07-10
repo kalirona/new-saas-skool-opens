@@ -14,11 +14,11 @@ class PromptTemplateBase(SQLModel):
 class PromptTemplate(PromptTemplateBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     org_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
     author_id: Optional[int] = Field(
         default=None,
-        sa_column=Column(Integer, ForeignKey("user.id", ondelete="SET NULL"), nullable=True),
+        sa_column=Column(Integer, ForeignKey("user.id", ondelete="SET NULL"), nullable=True, index=True),
     )
     current_version_id: Optional[int] = None
     prompt_uuid: str = Field(default="", index=True)
@@ -29,7 +29,7 @@ class PromptTemplate(PromptTemplateBase, table=True):
 class PromptTemplateVersion(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     prompt_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("prompttemplate.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("prompttemplate.id", ondelete="CASCADE"), index=True)
     )
     version_number: int = 0
     system_prompt: str = Field(sa_column=Column(Text))
@@ -39,7 +39,7 @@ class PromptTemplateVersion(SQLModel, table=True):
     max_tokens: int = 4096
     author_id: Optional[int] = Field(
         default=None,
-        sa_column=Column(Integer, ForeignKey("user.id", ondelete="SET NULL"), nullable=True),
+        sa_column=Column(Integer, ForeignKey("user.id", ondelete="SET NULL"), nullable=True, index=True),
     )
     change_note: Optional[str] = Field(default=None, sa_column=Column(String(200)))
     creation_date: str = ""

@@ -17,12 +17,12 @@ class PodcastEpisodeBase(SQLModel):
 class PodcastEpisode(PodcastEpisodeBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     podcast_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("podcast.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("podcast.id", ondelete="CASCADE"), index=True)
     )
     org_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
-    episode_uuid: str = ""
+    episode_uuid: str = Field(default="", index=True)
     creation_date: str = ""
     update_date: str = ""
 

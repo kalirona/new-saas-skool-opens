@@ -14,10 +14,10 @@ class RSVP(SQLModel, table=True):
     )
     id: Optional[int] = Field(default=None, primary_key=True)
     event_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("event.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("event.id", ondelete="CASCADE"), index=True)
     )
     user_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
     )
     status: str = Field(default="going", sa_column=Column(String(20)))
     attended: bool = False

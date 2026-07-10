@@ -1,6 +1,6 @@
 from typing import List
 from fastapi import APIRouter, Depends, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlmodel.ext.asyncio.session import AsyncSession
 from src.core.events.database import get_db_session
 from src.db.users import PublicUser
@@ -25,11 +25,11 @@ class SpaceReorderRequest(BaseModel):
 
 
 class SpaceCreateRequest(BaseModel):
-    name: str
-    icon: str | None = None
-    description: str | None = None
+    name: str = Field(max_length=255)
+    icon: str | None = Field(default=None, max_length=100)
+    description: str | None = Field(default=None, max_length=5000)
     ordering: int = 0
-    visibility: str = "public"
+    visibility: str = Field(default="public", max_length=20)
 
 
 @router.get(

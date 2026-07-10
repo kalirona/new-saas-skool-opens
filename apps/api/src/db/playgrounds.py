@@ -30,11 +30,11 @@ class Playground(PlaygroundBase, table=True):
     playground_uuid: str = Field(default="", index=True)
     course_id: Optional[int] = Field(
         default=None,
-        sa_column=Column(Integer, ForeignKey("course.id", ondelete="SET NULL"), nullable=True),
+        sa_column=Column(Integer, ForeignKey("course.id", ondelete="SET NULL"), nullable=True, index=True),
     )
     created_by: Optional[int] = Field(
         default=None,
-        sa_column=Column(Integer, ForeignKey("user.id", ondelete="SET NULL"), nullable=True),
+        sa_column=Column(Integer, ForeignKey("user.id", ondelete="SET NULL"), nullable=True, index=True),
     )
     creation_date: str = ""
     update_date: str = ""

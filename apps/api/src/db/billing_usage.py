@@ -15,7 +15,7 @@ class UsageEvent(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     org_id: int = Field(
-        sa_column=Column(BigInteger, ForeignKey("organization.id", ondelete="CASCADE"))
+        sa_column=Column(BigInteger, ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
     feature: str  # "members" or "courses"
     event_type: str  # "add" or "remove"

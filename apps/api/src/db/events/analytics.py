@@ -11,10 +11,10 @@ class EventRegistrationCount(SQLModel, table=True):
     """Daily snapshot of event registration counts."""
     id: Optional[int] = Field(default=None, primary_key=True)
     event_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("event.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("event.id", ondelete="CASCADE"), index=True)
     )
     org_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
     total_rsvps: int = 0
     going_count: int = 0
@@ -35,13 +35,13 @@ class EventRecordingView(SQLModel, table=True):
     """Tracks views of event recordings."""
     id: Optional[int] = Field(default=None, primary_key=True)
     recording_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("eventrecording.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("eventrecording.id", ondelete="CASCADE"), index=True)
     )
     user_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
     )
     org_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
     watch_seconds: int = 0
     viewed_at: str = ""
@@ -55,7 +55,7 @@ class EventRSVPSnapshot(SQLModel, table=True):
     """Tracks RSVP changes over time for trend analysis."""
     id: Optional[int] = Field(default=None, primary_key=True)
     event_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("event.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("event.id", ondelete="CASCADE"), index=True)
     )
     going: int = 0
     maybe: int = 0

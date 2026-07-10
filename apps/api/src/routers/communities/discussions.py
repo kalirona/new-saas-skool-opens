@@ -448,6 +448,7 @@ async def api_get_comments_by_discussion(
 )
 async def api_get_comment_count(
     discussion_uuid: str,
+    current_user: PublicUser = Depends(get_current_user),
     db_session: AsyncSession = Depends(get_db_session),
 ) -> dict:
     """

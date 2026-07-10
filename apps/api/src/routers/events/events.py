@@ -1,6 +1,6 @@
 from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, Request, Query, UploadFile, File
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlmodel.ext.asyncio.session import AsyncSession
 from src.core.events.database import get_db_session
 from src.db.users import PublicUser
@@ -39,26 +39,26 @@ router = APIRouter()
 
 
 class EventCreateRequest(BaseModel):
-    title: str
-    description: Optional[str] = None
+    title: str = Field(max_length=500)
+    description: Optional[str] = Field(default=None, max_length=50000)
     cover_image: Optional[str] = None
-    event_type: str = "live_session"
-    status: str = "scheduled"
-    host_name: Optional[str] = None
+    event_type: str = Field(default="live_session", max_length=30)
+    status: str = Field(default="scheduled", max_length=20)
+    host_name: Optional[str] = Field(default=None, max_length=255)
     host_id: Optional[int] = None
-    start_date: str
-    end_date: Optional[str] = None
-    timezone: Optional[str] = None
+    start_date: str = Field(max_length=20)
+    end_date: Optional[str] = Field(default=None, max_length=20)
+    timezone: Optional[str] = Field(default=None, max_length=50)
     duration_minutes: Optional[int] = None
     capacity: Optional[int] = None
-    repeat_interval: str = "none"
-    repeat_end_date: Optional[str] = None
+    repeat_interval: str = Field(default="none", max_length=20)
+    repeat_end_date: Optional[str] = Field(default=None, max_length=20)
     recurring_rule: Optional[str] = None
-    meeting_url: Optional[str] = None
-    meeting_provider: Optional[str] = None
-    recording_url: Optional[str] = None
+    meeting_url: Optional[str] = Field(default=None, max_length=2000)
+    meeting_provider: Optional[str] = Field(default=None, max_length=30)
+    recording_url: Optional[str] = Field(default=None, max_length=2000)
     attachments: Optional[Dict[str, Any]] = None
-    visibility: str = "private"
+    visibility: str = Field(default="private", max_length=20)
     locked: bool = False
     rsvp_enabled: bool = True
     community_id: Optional[int] = None
@@ -66,26 +66,26 @@ class EventCreateRequest(BaseModel):
 
 
 class EventUpdateRequest(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
+    title: Optional[str] = Field(default=None, max_length=500)
+    description: Optional[str] = Field(default=None, max_length=50000)
     cover_image: Optional[str] = None
-    event_type: Optional[str] = None
-    status: Optional[str] = None
-    host_name: Optional[str] = None
+    event_type: Optional[str] = Field(default=None, max_length=30)
+    status: Optional[str] = Field(default=None, max_length=20)
+    host_name: Optional[str] = Field(default=None, max_length=255)
     host_id: Optional[int] = None
-    start_date: Optional[str] = None
-    end_date: Optional[str] = None
-    timezone: Optional[str] = None
+    start_date: Optional[str] = Field(default=None, max_length=20)
+    end_date: Optional[str] = Field(default=None, max_length=20)
+    timezone: Optional[str] = Field(default=None, max_length=50)
     duration_minutes: Optional[int] = None
     capacity: Optional[int] = None
-    repeat_interval: Optional[str] = None
-    repeat_end_date: Optional[str] = None
+    repeat_interval: Optional[str] = Field(default=None, max_length=20)
+    repeat_end_date: Optional[str] = Field(default=None, max_length=20)
     recurring_rule: Optional[str] = None
-    meeting_url: Optional[str] = None
-    meeting_provider: Optional[str] = None
-    recording_url: Optional[str] = None
+    meeting_url: Optional[str] = Field(default=None, max_length=2000)
+    meeting_provider: Optional[str] = Field(default=None, max_length=30)
+    recording_url: Optional[str] = Field(default=None, max_length=2000)
     attachments: Optional[Dict[str, Any]] = None
-    visibility: Optional[str] = None
+    visibility: Optional[str] = Field(default=None, max_length=20)
     locked: Optional[bool] = None
     rsvp_enabled: Optional[bool] = None
     community_id: Optional[int] = None

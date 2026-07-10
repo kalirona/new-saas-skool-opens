@@ -53,9 +53,9 @@ class Podcast(PodcastBase, table=True):
     )
     id: Optional[int] = Field(default=None, primary_key=True)
     org_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
-    podcast_uuid: str = ""
+    podcast_uuid: str = Field(default="", index=True)
     creation_date: str = ""
     update_date: str = ""
     seo: Optional[dict] = Field(default=None, sa_column=Column(JSONB))

@@ -17,10 +17,10 @@ class WebhookEndpoint(SQLModel, table=True):
     )
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    webhook_uuid: str = Field(default="", max_length=100)
+    webhook_uuid: str = Field(default="", max_length=100, index=True)
     org_id: int = Field(
         sa_column=Column(
-            Integer, ForeignKey("organization.id", ondelete="CASCADE"), nullable=False
+            Integer, ForeignKey("organization.id", ondelete="CASCADE"), nullable=False, index=True
         )
     )
     url: str = Field(sa_column=Column(String(2048), nullable=False))
@@ -38,7 +38,7 @@ class WebhookEndpoint(SQLModel, table=True):
     zap_name: Optional[str] = Field(default=None, max_length=200)
     zap_id: Optional[str] = Field(default=None, max_length=100)
     created_by_user_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
+        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
     )
     creation_date: str = ""
     update_date: str = ""
@@ -60,10 +60,11 @@ class WebhookDeliveryLog(SQLModel, table=True):
             Integer,
             ForeignKey("webhook_endpoint.id", ondelete="CASCADE"),
             nullable=False,
+            index=True,
         )
     )
     event_name: str = Field(max_length=100)
-    delivery_uuid: str = Field(default="", max_length=100)
+    delivery_uuid: str = Field(default="", max_length=100, index=True)
     request_payload: Optional[dict] = Field(default=None, sa_column=Column(JSON))
     response_status: Optional[int] = None
     response_body: Optional[str] = Field(default=None, sa_column=Column(String(500)))

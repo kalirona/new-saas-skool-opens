@@ -14,10 +14,10 @@ class EventRecording(SQLModel, table=True):
     """Recording, slide deck, resource file, or transcript attached to a past event."""
     id: Optional[int] = Field(default=None, primary_key=True)
     event_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("event.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("event.id", ondelete="CASCADE"), index=True)
     )
     org_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
     recording_type: str = Field(default="recording", sa_column=Column(String(20)))
     title: str
@@ -29,11 +29,11 @@ class EventRecording(SQLModel, table=True):
     duration_seconds: Optional[int] = None
     course_id: Optional[int] = Field(
         default=None,
-        sa_column=Column(Integer, ForeignKey("course.id", ondelete="SET NULL"), nullable=True),
+        sa_column=Column(Integer, ForeignKey("course.id", ondelete="SET NULL"), nullable=True, index=True),
     )
     activity_id: Optional[int] = Field(
         default=None,
-        sa_column=Column(Integer, ForeignKey("activity.id", ondelete="SET NULL"), nullable=True),
+        sa_column=Column(Integer, ForeignKey("activity.id", ondelete="SET NULL"), nullable=True, index=True),
     )
     metadata: Optional[Dict[str, Any]] = Field(default=None, sa_column=Column(JSON, nullable=True))
     created_at: str = ""

@@ -23,7 +23,7 @@ class OrgPack(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     org_id: int = Field(
-        sa_column=Column(BigInteger, ForeignKey("organization.id", ondelete="CASCADE"))
+        sa_column=Column(BigInteger, ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
     pack_type: PackTypeEnum
     pack_id: str  # e.g. "ai_500", "seats_200"

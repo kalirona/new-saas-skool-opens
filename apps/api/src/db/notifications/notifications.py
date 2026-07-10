@@ -26,14 +26,14 @@ class Notification(NotificationBase, table=True):
     )
     id: Optional[int] = Field(default=None, primary_key=True)
     org_id: int = Field(
-        sa_column=Column(BigInteger, ForeignKey("organization.id", ondelete="CASCADE"))
+        sa_column=Column(BigInteger, ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
     user_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
     )
     actor_id: Optional[int] = Field(
         default=None,
-        sa_column=Column(Integer, ForeignKey("user.id", ondelete="SET NULL"), nullable=True),
+        sa_column=Column(Integer, ForeignKey("user.id", ondelete="SET NULL"), nullable=True, index=True),
     )
     resource_uuid: Optional[str] = None
     parent_resource_uuid: Optional[str] = None

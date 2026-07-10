@@ -28,7 +28,7 @@ class FolderContent(SQLModel, table=True):
     )
     resource_uuid: str = Field(default="", index=True)
     org_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
     position: int = Field(default=0)
     creation_date: str = ""

@@ -31,18 +31,16 @@ class TestSecurityComprehensive:
     
     def test_security_module_imports(self):
         """Test that all security modules can be imported successfully"""
-        # Test core security imports
+        from src.security.auth import get_current_user, get_authenticated_user, get_non_api_token_user
+        from src.security.rbac import check_resource_access, AccessAction
+        from src.security.features_utils.plan_check import require_plan
         
-        # Test auth imports
-        
-        # Test RBAC imports
-        
-        # Test RBAC utils imports
-        
-        # Test features utils imports
-        
-        # Verify all imports succeeded
-        assert True
+        assert get_current_user is not None
+        assert get_authenticated_user is not None
+        assert get_non_api_token_user is not None
+        assert check_resource_access is not None
+        assert AccessAction is not None
+        assert require_plan is not None
 
     def test_security_constants(self):
         """Test that security constants are properly defined"""

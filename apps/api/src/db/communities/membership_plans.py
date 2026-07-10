@@ -31,14 +31,14 @@ class MembershipPlan(MembershipPlanBase, table=True):
     )
     id: Optional[int] = Field(default=None, primary_key=True)
     community_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("community.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("community.id", ondelete="CASCADE"), index=True)
     )
     org_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"))
+        sa_column=Column(Integer, ForeignKey("organization.id", ondelete="CASCADE"), index=True)
     )
     usergroup_id: Optional[int] = Field(
         default=None,
-        sa_column=Column(Integer, ForeignKey("usergroup.id", ondelete="SET NULL"), nullable=True)
+        sa_column=Column(Integer, ForeignKey("usergroup.id", ondelete="SET NULL"), nullable=True, index=True)
     )
     plan_uuid: str = Field(default="", index=True)
     billing_provider: Optional[str] = None
